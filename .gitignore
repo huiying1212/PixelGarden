@@ -31,7 +31,10 @@ yarn-error.*
 
 # local env files
 .env*.local
+# 忽略环境变量文件，防止泄露 API Key
+.env
 
 # typescript
 *.tsbuildinfo
 
+# app-example
