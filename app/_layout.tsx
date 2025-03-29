@@ -1,16 +1,64 @@
 // app/_layout.tsx
-import { useRouter, Stack } from "expo-router";
-import { useEffect } from "react";
+import { useRouter, Stack, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import supabase from "./lib/supabase";
 
 export default function RootLayout() {
   const router = useRouter();
-  const isLoggedIn = false; // 替换为实际的登录状态检查
+  const segments = useSegments();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.replace("/login"); // 重定向到登录页
+    const checkSession = async () => {
+      try {
+        setIsLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsLoggedIn(!!session);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setIsLoggedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+    const inLoginPage = segments[0] === "login";
+    const inRegisterPage = segments[0] === "register";
+
+    if (!isLoggedIn && !inLoginPage && !inRegisterPage) {
+      // 如果未登录且不在登录或注册页面，重定向到登录页
+      router.replace("/login");
+    } else if (isLoggedIn && (inLoginPage || inRegisterPage)) {
+      // 如果已登录但在登录或注册页面，重定向到主页
+      router.replace("/");
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, segments, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return <Stack />;
 }

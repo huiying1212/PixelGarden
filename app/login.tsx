@@ -1,25 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { supabase } from './lib/supabase';
+import supabase from './lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasLoggedIn, setHasLoggedIn] = useState(false);
   const router = useRouter();
+  const loginAttempted = useRef(false);
+
+  // 添加 useEffect 来处理登录成功后的跳转
+  useEffect(() => {
+    if (hasLoggedIn) {
+      console.log('登录状态已更新，准备跳转...');
+      router.replace("/");
+    }
+  }, [hasLoggedIn]);
 
   const handleLogin = async () => {
     if (!validateInputs()) return;
+    
+    // 防止重复提交和重复登录
+    if (isLoading || isSubmitting || hasLoggedIn || loginAttempted.current) return;
 
     try {
       setIsLoading(true);
+      setIsSubmitting(true);
+      loginAttempted.current = true;
       let retryCount = 0;
       const maxRetries = 2;
 
       while (retryCount < maxRetries) {
         try {
+          // 直接尝试登录
           const { data: { session }, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -27,11 +44,35 @@ export default function LoginScreen() {
 
           if (error) {
             console.error('登录错误:', error.message);
+            
+            // 处理特定错误类型
+            if (error.message === 'Invalid login credentials') {
+              Alert.alert(
+                "登录失败",
+                "邮箱或密码错误。\n\n" +
+                "请检查：\n" +
+                "1. 邮箱地址是否正确\n" +
+                "2. 密码是否正确\n" +
+                "3. 是否已完成邮箱验证\n\n" +
+                "如果忘记密码，请联系管理员。"
+              );
+              return;
+            }
+
+            // 处理速率限制错误
+            if (error.message === 'Request rate limit reached') {
+              Alert.alert(
+                "请求过于频繁",
+                "请稍后再试。\n\n" +
+                "这是为了保护您的账号安全。"
+              );
+              return;
+            }
+
             // 如果是网络错误且还有重试机会，继续重试
             if (error.message === 'Network request failed' && retryCount < maxRetries - 1) {
               console.log(`登录重试中... (${retryCount + 1}/${maxRetries})`);
               retryCount++;
-              // 等待短暂时间后重试
               await new Promise(resolve => setTimeout(resolve, 1000));
               continue;
             }
@@ -54,16 +95,17 @@ export default function LoginScreen() {
               return;
             }
 
-            console.log('登录成功，session:', session);
-            router.replace("/");
-            return;
+            // 获取用户资料
+            const profileData = await checkAndCreateUserProfile(user);
+            if (profileData) {
+              await handleSuccessfulLogin(user, profileData);
+              return; // 确保登录成功后直接返回
+            }
           }
         } catch (error: any) {
-          // 如果是网络错误且还有重试机会，继续重试
           if (error.message === 'Network request failed' && retryCount < maxRetries - 1) {
             console.log(`登录重试中... (${retryCount + 1}/${maxRetries})`);
             retryCount++;
-            // 等待短暂时间后重试
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
           }
@@ -75,6 +117,8 @@ export default function LoginScreen() {
       Alert.alert('错误', '登录过程发生错误，请重试');
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
+      loginAttempted.current = false;
     }
   };
 
@@ -111,14 +155,19 @@ export default function LoginScreen() {
         {
           text: "重新发送",
           onPress: async () => {
-            const { error: resendError } = await supabase.auth.resend({
-              type: 'signup',
-              email,
-            });
-            if (resendError) {
-              Alert.alert("错误", "重新发送验证邮件失败：" + resendError.message);
-            } else {
-              Alert.alert("成功", "验证邮件已重新发送，请查收。");
+            try {
+              const { error: resendError } = await supabase.auth.signUp({
+                email,
+                password: '', // 空密码，因为我们只是重新发送验证邮件
+              });
+              
+              if (resendError) {
+                Alert.alert("错误", "重新发送验证邮件失败：" + resendError.message);
+              } else {
+                Alert.alert("成功", "验证邮件已重新发送，请查收。");
+              }
+            } catch (error: any) {
+              Alert.alert("错误", "重新发送验证邮件失败：" + error.message);
             }
           }
         }
@@ -128,43 +177,48 @@ export default function LoginScreen() {
 
   const checkAndCreateUserProfile = async (user: any) => {
     console.log('检查用户资料...');
-    const { data: profileData, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error('检查用户资料时出错:', profileError);
-      Alert.alert("错误", "检查用户资料失败：" + profileError.message);
-      return null;
-    }
-
-    if (!profileData) {
-      console.log('用户资料不存在，正在创建...');
-      const { error: insertError } = await supabase
+    try {
+      const { data: profileData, error: profileError } = await supabase
         .from('users')
-        .insert([
-          {
-            user_id: user.id,
-            name: user.user_metadata?.name || '未设置用户名',
-            age: user.user_metadata?.age || null,
-            gender: user.user_metadata?.gender || null,
-            created_at: new Date().toISOString()
-          }
-        ]);
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-      if (insertError) {
-        console.error('创建用户资料失败:', insertError);
-        Alert.alert("错误", "创建用户资料失败：" + insertError.message);
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('检查用户资料时出错:', profileError);
+        Alert.alert("错误", "检查用户资料失败：" + profileError.message);
         return null;
       }
 
-      // 创建初始记录
-      await createInitialRecords(user.id);
-    }
+      if (!profileData) {
+        console.log('用户资料不存在，正在创建...');
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([
+            {
+              user_id: user.id,
+              name: user.user_metadata?.name || '未设置用户名',
+              age: user.user_metadata?.age || null,
+              gender: user.user_metadata?.gender || null,
+              created_at: new Date().toISOString()
+            }
+          ]);
 
-    return profileData;
+        if (insertError) {
+          console.error('创建用户资料失败:', insertError);
+          Alert.alert("错误", "创建用户资料失败：" + insertError.message);
+          return null;
+        }
+
+        // 创建初始记录
+        await createInitialRecords(user.id);
+      }
+
+      return profileData;
+    } catch (error) {
+      console.error('检查用户资料时发生错误:', error);
+      return null;
+    }
   };
 
   const createInitialRecords = async (userId: string) => {
@@ -226,22 +280,24 @@ export default function LoginScreen() {
   };
 
   const handleSuccessfulLogin = async (user: any, profileData: any) => {
-    console.log('登录成功，保存用户信息...');
-    const userInfo = {
-      id: user.id,
-      email: user.email,
-      username: profileData?.name || user.user_metadata?.name || '未设置用户名',
-      age: profileData?.age || user.user_metadata?.age || null,
-      gender: profileData?.gender || user.user_metadata?.gender || null,
-    };
-    
+    // 防止重复处理
+    if (isSubmitting || hasLoggedIn) return;
+
     try {
+      console.log('登录成功，保存用户信息...');
+      const userInfo = {
+        id: user.id,
+        email: user.email,
+        username: profileData?.name || user.user_metadata?.name || '未设置用户名',
+        age: profileData?.age || user.user_metadata?.age || null,
+        gender: profileData?.gender || user.user_metadata?.gender || null,
+      };
+      
       await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
       console.log('用户信息已保存:', userInfo);
       
-      // 直接跳转
-      console.log('用户确认登录成功，跳转到首页');
-      router.replace("/");
+      // 设置登录状态，触发 useEffect 进行跳转
+      setHasLoggedIn(true);
     } catch (error) {
       console.error('保存用户信息失败:', error);
       Alert.alert("错误", "保存用户信息失败，请重试");

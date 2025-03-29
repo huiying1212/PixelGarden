@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
-import { supabase } from './lib/supabase';
+import supabase from './lib/supabase';
 import { decode } from 'base64-arraybuffer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -102,222 +103,159 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = async () => {
+    if (!validateInputs()) return;
+    
     // 防止重复提交
-    if (isSubmitting) {
-      Alert.alert("提示", "请勿重复点击注册按钮");
-      return;
-    }
-
-    // 如果已经注册成功，直接返回
-    if (registrationSuccess) {
-      Alert.alert("提示", "您已经成功注册，请检查邮箱完成验证。");
-      router.back();
-      return;
-    }
-
-    // 检查是否在冷却时间内
-    const now = Date.now();
-    const timeSinceLastAttempt = now - lastAttemptTime;
-    if (timeSinceLastAttempt < 60000) { // 60秒冷却时间
-      const remainingTime = Math.ceil((60000 - timeSinceLastAttempt) / 1000);
-      Alert.alert(
-        "请稍候",
-        `由于安全限制，请等待${remainingTime}秒后再尝试注册。\n\n` +
-        "在此期间，您可以：\n" +
-        "1. 检查邮箱是否已收到验证邮件\n" +
-        "2. 确认邮箱地址是否正确\n" +
-        "3. 等待冷却时间结束后重试"
-      );
-      return;
-    }
-
-    const isValid = await validateInputs();
-    if (!isValid) return;
+    if (isLoading || isSubmitting) return;
 
     try {
-      setIsSubmitting(true);
       setIsLoading(true);
-      console.log('开始注册流程...', { email, username });
+      setIsSubmitting(true);
 
-      // 添加初始延迟
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // 1. 创建认证用户
-      console.log('正在创建认证用户...');
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // 1. 尝试注册用户
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name: username,
-            age: age || null,
-            gender: gender || null,
-          },
-        },
       });
 
-      if (authError) {
-        console.error('注册错误详情:', authError);
-        
-        // 处理频率限制错误
-        if (authError.message.includes('seconds')) {
-          const waitTime = authError.message.match(/\d+/)?.[0] || '60';
-          setLastAttemptTime(now);
-          
-          // 如果等待时间小于5秒，自动等待后重试
-          if (parseInt(waitTime) < 5) {
-            Alert.alert(
-              "请稍候",
-              `等待${waitTime}秒后自动重试...`,
-              [{ text: "确定" }]
-            );
-            await new Promise(resolve => setTimeout(resolve, parseInt(waitTime) * 1000));
-            handleRegister(); // 自动重试
-            return;
-          }
-
-          Alert.alert(
-            "注册失败",
-            `由于安全限制，请等待约${waitTime}秒后再尝试注册。\n\n` +
-            "在此期间，您可以：\n" +
-            "1. 检查邮箱是否已收到验证邮件\n" +
-            "2. 确认邮箱地址是否正确\n" +
-            "3. 等待一段时间后重试",
-            [
-              { 
-                text: "确定", 
-                onPress: () => {
-                  console.log('用户确认，返回登录页面');
-                  router.back();
-                }
-              }
-            ]
-          );
-        } else {
-          handleAuthError(authError);
-        }
+      // 处理注册错误
+      if (signUpError) {
+        console.error('注册错误:', signUpError.message);
+        handleAuthError(signUpError);
         return;
       }
 
-      if (!authData.user) {
-        console.error('注册失败：未能创建用户');
-        Alert.alert("错误", "注册失败：未能创建用户");
+      if (!user) {
+        showAlert("注册失败", "创建用户失败，请重试");
         return;
       }
 
-      console.log('认证用户创建成功:', authData);
-      setLastAttemptTime(now);
-
-      // 显示成功提示
-      Alert.alert(
-        "注册成功", 
-        "请检查您的邮箱，点击验证链接完成注册。\n\n" +
-        "如果没有收到邮件，请：\n" +
-        "1. 检查垃圾邮件文件夹\n" +
-        "2. 等待1-2分钟\n" +
-        "3. 确认邮箱地址是否正确", 
-        [
-          { 
-            text: "确定", 
-            onPress: () => {
-              console.log('用户确认注册成功，返回登录页面');
-              router.back();
-            }
-          },
+      // 2. 创建用户资料
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([
           {
-            text: "重新发送验证邮件",
-            onPress: async () => {
-              try {
-                // 检查是否在冷却时间内
-                const now = Date.now();
-                const timeSinceLastAttempt = now - lastAttemptTime;
-                if (timeSinceLastAttempt < 60000) {
-                  const remainingTime = Math.ceil((60000 - timeSinceLastAttempt) / 1000);
-                  Alert.alert(
-                    "请稍候",
-                    `由于安全限制，请等待${remainingTime}秒后再尝试发送验证邮件。\n\n` +
-                    "在此期间，请检查垃圾邮件文件夹。"
-                  );
-                  return;
-                }
+            user_id: user.id,
+            name: username,
+            age: age ? parseInt(age) : null,
+            gender: gender || null,
+            created_at: new Date().toISOString()
+          }
+        ]);
 
-                // 添加延迟
-                await new Promise(resolve => setTimeout(resolve, 2000));
+      if (profileError) {
+        console.error('创建用户资料失败:', profileError);
+        // 如果创建资料失败，删除已创建的用户
+        await supabase.auth.signOut();
+        showAlert(
+          "注册失败",
+          "创建用户资料失败，请重试。\n错误信息：" + profileError.message
+        );
+        return;
+      }
 
-                const { error: retryError } = await supabase.auth.resend({
-                  type: 'signup',
-                  email,
-                });
-                if (retryError) {
-                  if (retryError.message.includes('seconds')) {
-                    const waitTime = retryError.message.match(/\d+/)?.[0] || '60';
-                    setLastAttemptTime(now);
-                    Alert.alert(
-                      "发送失败",
-                      `请等待约${waitTime}秒后再尝试发送验证邮件。\n\n` +
-                      "在此期间，请检查垃圾邮件文件夹。"
-                    );
-                  } else {
-                    Alert.alert("错误", "重新发送验证邮件失败：" + retryError.message);
-                  }
-                } else {
-                  Alert.alert("成功", "验证邮件已重新发送，请查收。");
-                  setLastAttemptTime(now);
-                }
-              } catch (error) {
-                Alert.alert("错误", "重新发送验证邮件时发生错误，请稍后重试。");
-              }
-            }
+      // 3. 注册成功，显示提示并跳转
+      showAlert(
+        "注册成功",
+        "请查看邮箱并点击验证链接。\n验证后即可登录。",
+        [
+          {
+            text: "确定",
+            onPress: () => router.replace("/login")
           }
         ]
       );
-
-      // 设置注册成功状态
-      setRegistrationSuccess(true);
-
     } catch (error: any) {
-      console.error("注册过程发生错误:", error);
-      Alert.alert(
-        "错误",
-        error.message || "注册过程中出现错误，请稍后重试"
-      );
+      console.error('注册过程发生错误:', error);
+      showAlert("错误", "注册过程发生错误，请重试");
     } finally {
       setIsLoading(false);
       setIsSubmitting(false);
     }
   };
 
+  // 跨平台的 Alert 显示函数
+  const showAlert = (title: string, message: string, buttons?: any[]) => {
+    if (Platform.OS === 'web') {
+      // 网页版使用 window.alert
+      window.alert(message);
+      if (buttons && buttons[0]?.onPress) {
+        buttons[0].onPress();
+      }
+    } else {
+      // 移动端使用 React Native 的 Alert
+      Alert.alert(title, message, buttons);
+    }
+  };
+
   const handleAuthError = (error: any) => {
-    if (error.message.includes('User already registered')) {
-      Alert.alert(
+    // 防止重复处理
+    if (isLoading) return;
+
+    if (error.message?.includes('User already registered')) {
+      showAlert(
         "邮箱已注册",
         "该邮箱已被注册。\n\n" +
         "请直接登录或使用其他邮箱注册。",
         [
-          { text: "去登录", onPress: () => router.push("/login") },
-          { text: "取消", style: "cancel" }
+          { 
+            text: "去登录", 
+            onPress: () => {
+              setIsLoading(false);
+              router.push("/login");
+            }
+          },
+          { 
+            text: "使用其他邮箱", 
+            onPress: () => {
+              setIsLoading(false);
+              setEmail("");
+              setErrorMessages(prev => ({ ...prev, email: "" }));
+              setErrors(prev => ({ ...prev, email: false }));
+            }
+          }
         ]
       );
-    } else if (error.message.includes('Invalid email')) {
+    } else if (error.message?.includes('Network request failed') || 
+               error.message?.includes('Failed to fetch') ||
+               error.message?.includes('NetworkError')) {
+      showAlert(
+        "网络错误",
+        "无法连接到服务器，请检查网络连接。\n\n" +
+        "如果问题持续存在，请稍后重试。"
+      );
+    } else if (error.message?.includes('Too Many Requests') || 
+               error.message?.includes('For security purposes')) {
+      const waitTimeMatch = error.message.match(/(\d+) seconds/);
+      const waitTime = waitTimeMatch ? parseInt(waitTimeMatch[1]) : 60;
+      
+      showAlert(
+        "请求过于频繁",
+        `请等待 ${waitTime} 秒后再试。\n\n` +
+        "这是为了保护您的账号安全。"
+      );
+    } else if (error.message?.includes('Invalid email')) {
       setErrorMessages(prev => ({ ...prev, email: "邮箱格式错误" }));
       setErrors(prev => ({ ...prev, email: true }));
-    } else if (error.message.includes('Password should be at least')) {
+    } else if (error.message?.includes('Password should be at least')) {
       setErrorMessages(prev => ({ ...prev, password: "密码长度不足" }));
       setErrors(prev => ({ ...prev, password: true }));
     } else {
-      Alert.alert("注册失败", error.message);
+      showAlert("注册失败", error.message || "请稍后重试");
     }
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
-        onPress={() => router.back()} 
-        style={styles.backButton}
-        disabled={isLoading}
-      >
-        <Image source={require("../assets/images/image.png")} style={styles.backIcon} />
-      </TouchableOpacity>
+      {Platform.OS !== 'web' && (
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.backButton}
+          disabled={isLoading}
+        >
+          <Image source={require("../assets/images/image.png")} style={styles.backIcon} />
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.title}>注册新账号</Text>
 
@@ -423,7 +361,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    paddingTop: 50
+    paddingTop: Platform.OS === 'web' ? 20 : 50
   },
   backButton: {
     position: 'absolute',
@@ -439,10 +377,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 30,
-    marginTop: 30
+    marginTop: Platform.OS === 'web' ? 10 : 30
   },
   inputContainer: {
-    width: 250,
+    width: Platform.OS === 'web' ? 300 : 250,
     marginBottom: 10
   },
   input: {
@@ -467,7 +405,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#4CAF50",
     padding: 10,
     borderRadius: 5,
-    width: 250,
+    width: Platform.OS === 'web' ? 300 : 250,
     height: 45,
     alignItems: 'center',
     justifyContent: 'center'
