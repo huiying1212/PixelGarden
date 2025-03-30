@@ -4,10 +4,9 @@
 
 ## 目录结构
 
-- **useAuth.ts** - 认证相关的钩子，处理登录、注册和会话管理逻辑
-<!-- - **useProfile.ts** - 用户资料相关的钩子
-- **useHealthData.ts** - 健康数据相关的钩子
-- **useAppSettings.ts** - 应用设置相关的钩子 -->
+- **useAuth.ts** - 认证相关的钩子，处理登录和会话管理逻辑
+- **useRegister.ts** - 用户注册相关的钩子，处理注册表单和验证逻辑
+- **useProfile.ts** - 用户资料相关的钩子，处理资料的获取和更新
 
 ## 使用方式
 

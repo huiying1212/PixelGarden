@@ -4,10 +4,12 @@
 
 ## 目录结构
 
-- **auth.service.ts** - 认证相关的服务，如登录、注册、验证邮箱等
-<!-- - **user.service.ts** - 用户相关的服务，如用户资料的获取和更新
-- **health.service.ts** - 健康数据相关的服务
-- **app.service.ts** - 应用程序相关的服务，如设置、使用统计等 -->
+- **auth.service.ts** - 认证相关的服务，提供以下功能：
+  - 用户登录（signInWithEmail）
+  - 处理未验证邮箱（handleUnverifiedEmail）
+  - 检查和创建用户资料（checkAndCreateUserProfile）
+  - 创建初始健康记录（createInitialRecords）
+  - 处理成功登录（handleSuccessfulLogin）
 
 ## 使用方式
 
@@ -21,9 +23,9 @@
 ## 示例
 
 ```typescript
-// 使用身体健康服务获取健康数据
-import { getPhysicalHealthData } from '../services/health.service';
+// 使用认证服务进行登录
+import { signInWithEmail } from '../services/auth.service';
 
-// 在组件中使用
-const healthData = await getPhysicalHealthData(userId);
+// 在钩子或组件中使用
+const { session } = await signInWithEmail(email, password);
 ``` 

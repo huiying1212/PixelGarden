@@ -4,12 +4,10 @@
 
 ## 目录结构
 
-- **database.ts** - Supabase数据库相关的类型定义（自动生成）
-<!-- 
-- **auth.types.ts** - 认证相关的类型定义
-- **user.types.ts** - 用户数据相关的类型定义
-- **health.types.ts** - 健康数据相关的类型定义
-- **api.types.ts** - API响应和请求相关的类型定义 -->
+- **database.ts** - Supabase数据库相关的类型定义（自动生成），包含以下主要表的类型：
+  - users - 用户信息表
+  - physical_health - 身体健康数据表
+  - mental_health - 心理健康数据表
 
 ## 自动生成数据库类型
 
@@ -45,7 +43,6 @@ function getUserProfile(userId: string): Promise<Database['public']['Tables']['u
 }
 
 // 使用辅助类型
-import { Tables } from '../types/database';
-
-type User = Tables<'users'>;
+type Tables = Database['public']['Tables'];
+type User = Tables['users']['Row'];
 ``` 
