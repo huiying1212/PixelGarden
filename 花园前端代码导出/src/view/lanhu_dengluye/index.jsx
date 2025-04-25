@@ -15,19 +15,6 @@ class DDS_lanhupage_0 extends Component {
         <div className={`${styles['group_1']} flex-col`}>
           <div className={`${styles['group_2']} flex-col`}>
             <div className={`${styles['box_1']} flex-row`}>
-              <span className={`${styles['text_1']}`}>9:27</span>
-              <img
-                className={`${styles['thumbnail_1']}`}
-                src={require('./assets/img/FigmaDDSSlicePNGacc41aff12b7652769bb4aaf5468be8e.png')}
-              />
-              <img
-                className={`${styles['image_1']}`}
-                src={require('./assets/img/FigmaDDSSlicePNGb388103b6923d2f4150e049494bb9119.png')}
-              />
-              <img
-                className={`${styles['image_2']}`}
-                src={require('./assets/img/FigmaDDSSlicePNGecf9a0c42825fe757c5417df1078d2e9.png')}
-              />
             </div>
             <div className={`${styles['text-wrapper_1']} flex-row`}>
               <span className={`${styles['text_2']}`}>欢迎回来！</span>

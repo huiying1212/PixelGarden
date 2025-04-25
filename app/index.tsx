@@ -122,58 +122,31 @@ export default function HomeScreen() {
                 source={require("../app/assets/home_img/FigmaDDSSlicePNG4d18dfe8145a98ae121d9b0d26ddcd2c.png")}
               />
             </TouchableOpacity>
-            <Image
-              style={styles.label_2}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNGc962ef08aac3b1b358b4af3563566ed7.png")}
-            />
-          </View>
-          
-          <View style={styles.imageWrapper_2}>
-            <Image
-              style={styles.label_3}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
-            />
-          </View>
-          
-          <View style={styles.imageWrapper_3}>
-            <Image
-              style={styles.image_3}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNG1ee3062b921c2fddc770115f541327a9.png")}
-            />
-            <Image
-              style={styles.label_4}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
-            />
-          </View>
-          
-          <View style={styles.imageWrapper_4}>
-            <Image
-              style={styles.image_4}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNG6e653f4b89407746d6ed9540d922db47.png")}
-            />
-            <Image
-              style={styles.label_5}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNGb3b272f2ee7fa5d64fdd2800391af37a.png")}
-            />
-          </View>
-          
-          <View style={styles.block_3}>
-            <View style={styles.box_1}>
-              <ImageBackground
-                style={styles.group_2}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
-                resizeMode="cover"
-              >
-                <View style={styles.group_4}>
-                    <View style={styles.block_4}>
-                      <View style={styles.textWrapper_1}>
-                        <Text style={styles.text_2}>今天的花园真美~</Text>
-                      </View>
-                    </View>
-                  </View>
-              </ImageBackground>
+            <View style={styles.verticalLabelsContainer}>
+              <Image
+                style={styles.label_2}
+                source={require("../app/assets/home_img/FigmaDDSSlicePNGc962ef08aac3b1b358b4af3563566ed7.png")}
+              />
+              <Image
+                style={styles.label_3}
+                source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
+              />
+              <Image
+                style={styles.label_4}
+                source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
+              />
+              <Image
+                style={styles.label_5}
+                source={require("../app/assets/home_img/FigmaDDSSlicePNGb3b272f2ee7fa5d64fdd2800391af37a.png")}
+              />
             </View>
           </View>
+          
+          <Image
+            style={styles.centerImage}
+            source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
+            resizeMode="contain"
+          />
           
           <View style={styles.block_5}>
             <View style={styles.imageWrapper_5}>
@@ -231,20 +204,21 @@ export default function HomeScreen() {
             {renderIndicator()}
           </View>
           
-          <Image
-            style={styles.image_8}
-            source={require("../app/assets/home_img/FigmaDDSSlicePNG09a9c7f4c62224d2bf76dc99a98bf8d4.png")}
-          />
+          <TouchableOpacity 
+            style={styles.label_7} 
+            onPress={() => router.push("/record")}
+          >
+            <Image
+              style={styles.fullSize}
+              source={require("../app/assets/home_img/FigmaDDSSlicePNG5bc52336be2f3f787cb8ddaa1e0509e6.png")}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
           
           <Image
-            style={styles.label_6}
-            source={require("../app/assets/home_img/FigmaDDSSlicePNG5688f8ba0ce5fa503e4fb09624477806.png")}
-          />
-          
-         
-          <Image
-            style={styles.label_7}
-            source={require("../app/assets/home_img/FigmaDDSSlicePNG5bc52336be2f3f787cb8ddaa1e0509e6.png")}
+            style={styles.newImage}
+            source={require("../app/assets/home_img/FigmaDDSSlicePNG8d2bc073980887ad18c3dc69f7f7d02e.png")}
+            resizeMode="contain"
           />
         </View>
         
@@ -317,141 +291,37 @@ const styles = StyleSheet.create({
     marginLeft: width * 0.05,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   label_1: {
     width: 48,
     height: 48,
   },
+  verticalLabelsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
   label_2: {
     width: 32,
     height: 32,
   },
-  imageWrapper_2: {
-    height: 25,
-    width: 82,
-    marginTop: 10,
-    marginLeft: width * 0.5,
-    position: 'absolute',
-    right: 20,
-    top: 85,
-  },
   label_3: {
     width: 32,
     height: 32,
-    marginTop: -10,
-    marginLeft: 36,
-  },
-  imageWrapper_3: {
-    width: width * 0.78, // 294px 相对于 375px 的比例
-    height: 44,
-    marginTop: 1,
-    marginLeft: width * 0.2,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'absolute',
-    right: 20,
-    top: 120,
-  },
-  image_3: {
-    width: 77,
-    height: 39,
+    marginTop: 15,
   },
   label_4: {
     width: 32,
     height: 32,
-    marginTop: 12,
-  },
-  imageWrapper_4: {
-    width: 168,
-    height: 45,
-    marginTop: 6,
-    position: 'absolute',
-    right: 20,
-    top: 170,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  image_4: {
-    width: 103,
-    height: 45,
+    marginTop: 15,
   },
   label_5: {
     width: 32,
     height: 32,
-    marginTop: 10,
-  },
-  block_3: {
-    backgroundColor: 'rgba(60, 101, 81, 0.61)',
-    height: 168,
-    width: width * 0.88, // 331px 相对于 375px 的比例
-    position: 'absolute',
-    left: width * 0.06,
-    top: 270,
-  },
-  box_1: {
-    position: 'relative',
-    width: 210,
-    height: 131,
-    marginTop: -47,
-    marginLeft: 129,
-  },
-  group_2: {
-    height: 131,
-    width: 210,
-    position: 'absolute',
-    left: -35,
-    top: 18,
-  },
-  group_3: {
-    height: 131,
-    width: 210,
-    position: 'relative',
-  },
-  image_5: {
-    width: 76,
-    height: 39,
-    marginTop: 4,
-    marginLeft: 65,
-  },
-  group_4: {
-    height: 131,
-    width: 210,
-    position: 'absolute',
-    left: -35,
-    top: 18,
-  },
-  block_4: {
-    height: 131,
-    width: 210,
-  },
-  textWrapper_1: {
-    backgroundColor: 'rgba(251, 255, 244, 1)',
-    height: 44,
-    borderWidth: 1,
-    borderColor: 'rgba(60, 123, 85, 1)',
-    width: 130,
-    marginTop: 76,
-    marginLeft: -10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text_2: {
-    width: 113,
-    height: 15,
-    color: 'rgba(9, 62, 39, 1)',
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 15,
-  },
-  image_6: {
-    position: 'absolute',
-    left: 0,
-    top: 4,
-    width: 68,
-    height: 68,
+    marginTop: 15,
   },
   block_5: {
     backgroundColor: 'rgba(196, 232, 217, 0.621)',
@@ -475,20 +345,6 @@ const styles = StyleSheet.create({
     height: 32,
     marginRight: 12,
   },
-  image_8: {
-    position: 'absolute',
-    left: width * 0.1,
-    top: 214,
-    width: 82,
-    height: 25,
-  },
-  label_6: {
-    position: 'absolute',
-    left: width * 0.15,
-    top: 126,
-    width: 46,
-    height: 23,
-  },
   imageWrapper_6: {
     height: 75,
     width: 62,
@@ -498,17 +354,27 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  image_9: {
-    width: 48,
-    height: 8,
-    marginBottom: 3,
-  },
   label_7: {
     position: 'absolute',
-    right: 30,
-    top: 527,
-    width: 48,
-    height: 48,
+    right: 20,
+    bottom: height * 0.05 + 50, // 定位在block_5上方
+    width: 60,
+    height: 60,
+    backgroundColor: 'transparent',
+    zIndex: 2,
+  },
+  fullSize: {
+    width: '100%',
+    height: '100%',
+  },
+  newImage: {
+    position: 'absolute',
+    left: 20,
+    bottom: height * 0.05 + 50, // 与label_7对称
+    width: 100,
+    height: 100,
+    backgroundColor: 'transparent',
+    zIndex: 2,
   },
   image_10: {
     width: width / 7,
@@ -551,5 +417,13 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     zIndex: -1,
+  },
+  centerImage: {
+    position: 'absolute',
+    width: width * 0.9,
+    height: width * 0.7,
+    left: width * 0.05,
+    top: height * 0.3,
+    zIndex: 1,
   },
 });
