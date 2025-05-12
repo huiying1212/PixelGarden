@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
+import TaskScreen from './TaskScreen';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +35,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   useEffect(() => {
     // 组件挂载时预加载所有图片
@@ -127,10 +129,13 @@ export default function HomeScreen() {
                 style={styles.label_2}
                 source={require("../app/assets/home_img/FigmaDDSSlicePNGc962ef08aac3b1b358b4af3563566ed7.png")}
               />
-              <Image
-                style={styles.label_3}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
-              />
+              <TouchableOpacity onPress={() => setShowTaskModal(true)}>
+                <Image
+                  style={styles.label_3}
+                  source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
               <Image
                 style={styles.label_4}
                 source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
@@ -141,12 +146,6 @@ export default function HomeScreen() {
               />
             </View>
           </View>
-          
-          <Image
-            style={styles.centerImage}
-            source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
-            resizeMode="contain"
-          />
           
           <View style={styles.block_5}>
             <View style={styles.imageWrapper_5}>
@@ -223,6 +222,12 @@ export default function HomeScreen() {
         </View>
         
       </ImageBackground>
+      {showTaskModal && <TaskScreen onClose={() => setShowTaskModal(false)} />}
+      <Image
+        style={styles.centerImage}
+        source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
+        resizeMode="contain"
+      />
     </SafeAreaView>
   );
 }
@@ -425,5 +430,18 @@ const styles = StyleSheet.create({
     left: width * 0.05,
     top: height * 0.3,
     zIndex: 1,
+  },
+  imageContainer: {
+    width: 32,
+    height: 32,
+    marginRight: 5,
+  },
+  imageWrapper: {
+    width: '100%',
+    height: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
 });
