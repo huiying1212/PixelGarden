@@ -169,7 +169,7 @@ export default function HomeScreen() {
               <TouchableOpacity onPress={() => setShowFriendModal(true)}>
                 <Image
                   style={styles.label_4}
-                  source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
+                  source={require("../app/assets/home_img/friends.png")}
                 />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleDecorations}>
@@ -291,11 +291,6 @@ export default function HomeScreen() {
       {showFriendModal && (
         <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
       )}
-      <Image
-        style={styles.centerImage}
-        source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
-        resizeMode="contain"
-      />
     </View>
   );
 }
