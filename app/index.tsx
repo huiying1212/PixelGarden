@@ -17,6 +17,7 @@ import { Asset } from "expo-asset";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TaskScreen from './TaskScreen';
 import ModalTabs from "./components/ModalTabs";
+import FriendModal from "./components/FriendModal";
 import { WebView } from 'react-native-webview';
 
 
@@ -42,6 +43,7 @@ export default function HomeScreen() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showFriendModal, setShowFriendModal] = useState(false);
   const [showDecorations, setShowDecorations] = useState(false);
   const decorationSlideAnim = useState(new Animated.Value(0))[0];
   const iconsPositionAnim = useState(new Animated.Value(0))[0];
@@ -164,10 +166,10 @@ export default function HomeScreen() {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowFriendModal(true)}>
                 <Image
                   style={styles.label_4}
-                  source={require("../app/assets/home_img/friends.png")}
+                  source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
                 />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleDecorations}>
@@ -286,6 +288,14 @@ export default function HomeScreen() {
       {showTaskModal && (
         <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
       )}
+      {showFriendModal && (
+        <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
+      )}
+      <Image
+        style={styles.centerImage}
+        source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
+        resizeMode="contain"
+      />
     </View>
   );
 }

@@ -10,7 +10,7 @@ const flowers = [
   { name: '白色花', icon: require('./assets/flowers/flower6.png') },
   { name: '郁金香', icon: require('./assets/flowers/flower7.png') },
   { name: '粉色花', icon: require('./assets/flowers/flower8.png') },
-  { name: '未知', icon: require('./assets/flowers/flower9.png') },
+  { name: '未知', icon:  require('./assets/flowers/flower9.png')},
 ];
 
 export default function GalleryScreen() {
@@ -19,11 +19,8 @@ export default function GalleryScreen() {
       {flowers.map((flower, index) => (
         <View key={index} style={styles.gridItem}>
           <ImageBackground
-            source={{
-              uri: 'https://lanhu-oss-2537-2.lanhuapp.com/FigmaDDSSlicePNGde1e4d5d6917d01a404cd32980a3fb00.png',
-            }}
+            source={require('./assets/flowers/方块背景.png')}
             style={styles.imageBackground}
-            imageStyle={styles.backgroundImageStyle} // <-- 添加这行控制背景图片圆角
           >
             {flower.icon ? (
               <Image source={flower.icon} style={styles.flowerImage} />
@@ -51,18 +48,17 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     margin: 6,
-    borderRadius: 8,
-    overflow: 'hidden', // 确保圆角生效
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   imageBackground: {
+    flex: 1,
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backgroundImageStyle: {
-    resizeMode: 'stretch', // 或者 cover，取决于背景图效果
-    borderRadius: 8,
+    borderRadius: 10,  // Ensuring rounded corners for consistency
   },
   flowerImage: {
     width: 40,

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Modal, TouchableOpacity, Text, StyleSheet, ImageBackground } from "react-native";
+import { View, Modal, TouchableOpacity, Text, StyleSheet, Image, Dimensions } from "react-native";
 import TaskScreen from "../TaskScreen";
 import GalleryScreen from "../GalleryScreen";
+
+const { width, height } = Dimensions.get('window');
 
 interface ModalTabsProps {
   visible: boolean;
@@ -47,9 +49,14 @@ export default function ModalTabs({ visible, onClose }: ModalTabsProps) {
             </View>
 
             {/* 主内容区域 */}
-      <View style={styles.contentArea}>
-        {activeTab === "task" ? <TaskScreen /> : <GalleryScreen />}
-      </View>
+            <View style={styles.contentArea}>
+              {activeTab === "task" ? <TaskScreen /> : <GalleryScreen />}
+            </View>
+
+            {/* 关闭按钮（位于弹窗下方一定距离） */}
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -67,10 +74,13 @@ const styles = StyleSheet.create({
   greenPopup: {
     width: 300,
     height: 430,
-    borderRadius: 0,
-    backgroundColor: '#F0FFF0',
+    borderRadius: 5,
+    backgroundColor: '#D6F1E4',
     padding: 16,
     alignItems: 'center',
+    position: 'relative', // To position the close button absolutely
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -119,7 +129,18 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  contentBackgroundImage: {
-    // Add any necessary styles for the content background image
+  closeButton: {
+    marginTop: 20,  // 给关闭按钮添加一定的间距
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
-}); 
+  closeButtonText: {
+    fontSize: 24,
+    color: '#5a7d5a',
+  },
+});
