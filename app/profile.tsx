@@ -17,8 +17,8 @@ const IMAGES = {
   activeDay: require('../app/assets/profile_img/FigmaDDSSlicePNGdfbb002210802394edf7d400f5a7c0de.png'),
   inactiveDay: require('../app/assets/profile_img/FigmaDDSSlicePNGca17798141ccd070aee1248aca5a0d46.png'),
   pendingDay: require('../app/assets/profile_img/FigmaDDSSlicePNG817515a7d625a46276a74a11d15c0bb4.png'),
-  activityIcon: require('../app/assets/profile_img/FigmaDDSSlicePNG3c3cb50fa104e9534e95ed7709262f52.png'),
-  stepsIcon: require('../app/assets/profile_img/FigmaDDSSlicePNGd5176c4059ba46a35a5982e106f2ffaa.png'),
+  activityIcon: require('../app/assets/profile_img/small garden.png'),
+  stepsIcon: require('../app/assets/profile_img/walk.png'),
   background: require('../app/assets/profile_img/FigmaDDSSlicePNG0193b3eb53db29fe492771a60b01e010.png'),
   back: require('./assets/img/backbutton.png'),
 };
@@ -90,10 +90,12 @@ export default function ProfileScreen() {
     };
 
     const dates = getDates();
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
 
     return dayStatuses.map((status, index) => {
       let imageSource;
-      let containerStyle = styles.dayMarkerContainer;
+      const isToday = index === (today === 0 ? 6 : today - 1);
       
       switch(status) {
         case 'active':
@@ -109,8 +111,17 @@ export default function ProfileScreen() {
       
       return (
         <View key={index} style={styles.markerColumn}>
-          <View style={containerStyle}>
-            <Image source={imageSource} style={styles.dayMarker} />
+          <View style={[
+            styles.dayMarkerContainer,
+            isToday && styles.todayMarkerContainer
+          ]}>
+            <View style={styles.dayMarkerInner}>
+              <Image 
+                source={imageSource} 
+                style={styles.dayMarker}
+                resizeMode="contain"
+              />
+            </View>
           </View>
           <Text style={styles.dateLabel}>{dates[index]}</Text>
         </View>
@@ -154,22 +165,53 @@ export default function ProfileScreen() {
           <Image 
             source={IMAGES.activityIcon} 
             style={styles.activityIcon}
-            resizeMode="contain" 
+            resizeMode="cover" 
           />
         </View>
 
         <View style={styles.statsSection}>
-          <View style={styles.statItem}>
-            <Image source={IMAGES.stepsIcon} style={styles.statIcon} />
-            <Text style={styles.statText}>12345步</Text>
+          <View style={styles.statBlock}>
+            <View style={styles.statRow}>
+              <Image 
+                source={IMAGES.stepsIcon} 
+                style={styles.statIcon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.statTitle, { color: '#009688' }]}>步数</Text>
+            </View>
+            <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
+              12345<Text style={styles.statValueSub}>/9000</Text><Text style={styles.statUnit}>步</Text>
+            </Text>
           </View>
-          <View style={styles.statDivider} />
-          <Text style={styles.statText}>24分</Text>
-          <View style={styles.statDivider} />
-          <Text style={styles.statText}>7.5小时</Text>
+          <View style={styles.statBlock}>
+            <View style={styles.statRow}>
+              <Image 
+                source={require('../app/assets/profile_img/fire.png')} 
+                style={styles.statIcon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.statTitle, { color: '#F44336' }]}>卡路里</Text>
+            </View>
+            <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
+              961<Text style={styles.statValueSub}>/600</Text><Text style={styles.statUnit}>千卡</Text>
+            </Text>
+          </View>
+          <View style={styles.statBlock}>
+            <View style={styles.statRow}>
+              <Image 
+                source={require('../app/assets/profile_img/moon.png')} 
+                style={[styles.statIcon, {tintColor: '#00B8F6'}]}
+                resizeMode="contain"
+              />
+              <Text style={[styles.statTitle, { color: '#00B8F6' }]}>睡眠时长</Text>
+            </View>
+            <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
+              7.5<Text style={styles.statValueSub}>/8</Text><Text style={styles.statUnit}>小时</Text>
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.moodSection}>
+        <View style={styles.moodSectionBox}>
           <Text style={styles.moodText}>今天的工作很顺利，晚上还和朋友一起去吃了火锅，开心~</Text>
         </View>
     
@@ -263,10 +305,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 2,
+    overflow: 'hidden',
+  },
+  todayMarkerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#3C7B55',
+  },
+  dayMarkerInner: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dayMarker: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
   },
   dateLabel: {
     marginTop: 4,
@@ -277,42 +332,83 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    width: '100%',
+    marginHorizontal: 20,
     height: 200,
+    backgroundColor: '#fff',
+    borderColor: '#3C7B55',
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    padding: 8,
   },
   activityIcon: {
-    width: '70%',
-    height: 180,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   statsSection: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     marginTop: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
   },
-  statItem: {
+  statBlock: {
+    width: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+  },
+  statRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
   },
   statIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 5,
-  },
-  statText: {
-    color: '#093E27',
-    fontSize: 16,
-  },
-  statDivider: {
-    width: 1,
+    width: 20,
     height: 20,
-    backgroundColor: 'rgba(9, 62, 39, 0.2)',
-    marginHorizontal: 15,
+    marginRight: 4,
+  },
+  statTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  statValue: {
+    fontSize: 13,
+    color: '#093E27',
+    fontWeight: 'bold',
+    marginTop: 2,
+    paddingLeft: 8,
+  },
+  statValueSub: {
+    fontSize: 13,
+    color: '#093E27',
+    fontWeight: 'bold',
+  },
+  statUnit: {
+    fontSize: 13,
+    color: '#093E27',
+    fontWeight: 'bold',
+  },
+  moodSectionBox: {
+    backgroundColor: '#fff',
+    borderColor: '#3C7B55',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 20,
+    marginHorizontal: 20,
+    shadowColor: '#3C7B55',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   moodSection: {
-    marginTop: 20,
-    paddingHorizontal: 20,
+    marginTop: 0,
+    paddingHorizontal: 0,
   },
   moodText: {
     color: '#093E27',
