@@ -23,7 +23,8 @@ const IMAGES = {
   back: require('./assets/img/backbutton.png'),
 };
 
-const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '今天'];
+// 基础星期数组
+const BASE_WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 export default function ProfileScreen() {
   const { userInfo, isLoading, confirmLogout } = useProfile();
@@ -31,8 +32,27 @@ export default function ProfileScreen() {
   // 园龄天数 - 实际应用中应从API获取
   const gardenDays = 56;
   
+  // 获取当前星期几并调整显示顺序
+  const getWeekDays = () => {
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
+    const weekDays = [...BASE_WEEKDAYS];
+    
+    // 将"今天"放在正确的位置
+    const adjustedWeekDays = weekDays.map((day, index) => {
+      // 如果是今天，返回"今天"
+      if (index === (today === 0 ? 6 : today - 1)) {
+        return '今天';
+      }
+      return day;
+    });
+    
+    return adjustedWeekDays;
+  };
+  
   const renderWeekDays = () => {
-    return WEEKDAYS.map((day, index) => (
+    const weekDays = getWeekDays();
+    return weekDays.map((day, index) => (
       <Text 
         key={index} 
         style={[
@@ -55,16 +75,16 @@ export default function ProfileScreen() {
     const getDates = () => {
       const dates = [];
       const now = new Date();
+      const today = now.getDay(); // 0是周日，1是周一，以此类推
       
-      // 获取前6天的日期
-      for (let i = 6; i > 0; i--) {
+      // 计算需要显示的日期
+      for (let i = 0; i < 7; i++) {
         const date = new Date(now);
-        date.setDate(date.getDate() - i);
+        // 计算偏移量：如果今天是周二，我们需要显示周一到周日
+        const offset = i - (today === 0 ? 6 : today - 1);
+        date.setDate(date.getDate() + offset);
         dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
       }
-      
-      // 添加今天的日期
-      dates.push(`${now.getMonth() + 1}-${now.getDate()}`);
       
       return dates;
     };
