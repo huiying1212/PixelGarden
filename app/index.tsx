@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
 import TaskScreen from './TaskScreen';
 import ModalTabs from "./components/ModalTabs";
+import FriendModal from "./components/FriendModal";
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ export default function HomeScreen() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showFriendModal, setShowFriendModal] = useState(false);
 
   useEffect(() => {
     // 组件挂载时预加载所有图片
@@ -137,10 +139,12 @@ export default function HomeScreen() {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-              <Image
-                style={styles.label_4}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
-              />
+              <TouchableOpacity onPress={() => setShowFriendModal(true)}>
+                <Image
+                  style={styles.label_4}
+                  source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
+                />
+              </TouchableOpacity>
               <Image
                 style={styles.label_5}
                 source={require("../app/assets/home_img/FigmaDDSSlicePNGb3b272f2ee7fa5d64fdd2800391af37a.png")}
@@ -225,6 +229,9 @@ export default function HomeScreen() {
       </ImageBackground>
       {showTaskModal && (
         <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      )}
+      {showFriendModal && (
+        <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
       )}
       <Image
         style={styles.centerImage}

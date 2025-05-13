@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 
 const tasks = [
   {
@@ -47,10 +47,16 @@ export default function TaskScreen() {
                 : `${task.progress} / ${task.total}`}
             </Text>
             <View style={[styles.rewardBox, task.completed && styles.rewardBoxActive]}>
-              <Text style={[styles.rewardText, task.completed && styles.rewardTextActive]}>
-                完成奖励
-                <Text style={{ color: '#ffb400' }}> 🪙x{task.reward}</Text>
-              </Text>
+              <View style={styles.rewardContent}>
+                <Text style={[styles.rewardText, task.completed && styles.rewardTextActive]}>
+                  完成奖励
+                </Text>
+                <Image
+                  source={require('./assets/flowers/sun.png')}
+                  style={styles.coinIcon}
+                />
+                <Text style={[styles.rewardText, { color: '#ffb400' }]}>x{task.reward}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -130,4 +136,13 @@ const styles = StyleSheet.create({
   rewardTextActive: {
     color: '#5a7d5a',
   },
-});
+  rewardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  coinIcon: {
+    width: 16,
+    height: 16,
+    marginHorizontal: 4,
+  },
+}); 
