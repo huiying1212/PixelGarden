@@ -27,9 +27,6 @@ const { width, height } = Dimensions.get('window');
 const preloadImages = async () => {
   const images = [
     require("../app/assets/home_img/Rectangle55.png"),
-    require("../app/assets/home_img/FigmaDDSSlicePNGc0b99b6d8ec8864b2f76a507b0ce9bc3.png"),
-    require("../app/assets/home_img/FigmaDDSSlicePNGb8496032da47137ff7cbc305cbb90a1f.png"),
-    require("../app/assets/home_img/FigmaDDSSlicePNG9594b6172677a226ed164b5759827904.png"),
     require("../app/assets/home_img/FigmaDDSSlicePNG45b7b6265782e2dd5d0fdd1535fd84a2.png"),
     require("../app/assets/home_img/Rectangle45.png")
   ];
@@ -40,7 +37,6 @@ const preloadImages = async () => {
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showFriendModal, setShowFriendModal] = useState(false);
@@ -64,18 +60,9 @@ export default function HomeScreen() {
     loadImages();
   }, []);
 
-  const getIconCount = (index: number): number => {
-    switch(index) {
-      case 0: return 8;
-      case 1: return 2;
-      case 2: return 6;
-      default: return 8;
-    }
-  };
-
   const renderIcons = () => {
-    const iconCount = getIconCount(selectedTabIndex);
     const icons = [];
+    const iconCount = 8;
     
     // 计算每行显示的图标数
     const iconsPerRow = 4;
@@ -103,16 +90,6 @@ export default function HomeScreen() {
     }
     
     return icons;
-  };
-
-  // 预渲染指示器图片，避免点击时的延迟
-  const renderIndicator = () => {
-    return (
-      <Image
-        style={[styles.tabIndicator, { opacity: 0 }]}
-        source={require("../app/assets/home_img/Rectangle55.png")}
-      />
-    );
   };
 
   const toggleDecorations = () => {
@@ -181,6 +158,12 @@ export default function HomeScreen() {
             </View>
           </View>
           
+          <Image
+            style={styles.mailboxImage}
+            source={require("../app/assets/home_img/mailbox.png")}
+            resizeMode="contain"
+          />
+          
           <Animated.View 
             style={[
               styles.block_5,
@@ -197,50 +180,6 @@ export default function HomeScreen() {
               }
             ]}
           >
-            <View style={styles.imageWrapper_5}>
-              <TouchableOpacity onPress={() => setSelectedTabIndex(0)}>
-                <View>
-                  <Image
-                    style={styles.image_7}
-                    source={require("../app/assets/home_img/FigmaDDSSlicePNGc0b99b6d8ec8864b2f76a507b0ce9bc3.png")}
-                  />
-                  {selectedTabIndex === 0 && (
-                    <Image
-                      style={styles.tabIndicator}
-                      source={require("../app/assets/home_img/Rectangle55.png")}
-                    />
-                  )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setSelectedTabIndex(1)}>
-                <View>
-                  <Image
-                    style={styles.image_7}
-                    source={require("../app/assets/home_img/FigmaDDSSlicePNGb8496032da47137ff7cbc305cbb90a1f.png")}
-                  />
-                  {selectedTabIndex === 1 && (
-                    <Image
-                      style={styles.tabIndicator}
-                      source={require("../app/assets/home_img/Rectangle55.png")}
-                    />
-                  )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setSelectedTabIndex(2)}>
-                <View>
-                  <Image
-                    style={styles.image_7}
-                    source={require("../app/assets/home_img/FigmaDDSSlicePNG9594b6172677a226ed164b5759827904.png")}
-                  />
-                  {selectedTabIndex === 2 && (
-                    <Image
-                      style={styles.tabIndicator}
-                      source={require("../app/assets/home_img/Rectangle55.png")}
-                    />
-                  )}
-                </View>
-              </TouchableOpacity>
-            </View>
             <Image
               style={styles.bottomImage}
               source={require("../app/assets/home_img/Rectangle45.png")}
@@ -248,8 +187,6 @@ export default function HomeScreen() {
             <View style={styles.iconsContainer}>
               {renderIcons()}
             </View>
-            {/* 预渲染指示器 */}
-            {renderIndicator()}
           </Animated.View>
           
           <Animated.View style={[
@@ -259,7 +196,7 @@ export default function HomeScreen() {
                 {
                   translateY: iconsPositionAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, -240],  // 向上移动100单位
+                    outputRange: [0, -215],  // 向上移动100单位
                   })
                 }
               ]
@@ -403,35 +340,77 @@ const styles = StyleSheet.create({
     height: 32,
   },
   block_5: {
-    backgroundColor: 'rgba(196, 232, 217, 0.621)',
+    backgroundColor: 'transparent',
     height: 40,
     width: width,
     position: 'absolute',
     bottom: height * 0.05,
     left: 0,
   },
-  imageWrapper_5: {
-    width: width * 0.67, // 252px 相对于 375px 的比例
-    height: 32,
-    flexDirection: 'row',
+  bottomImage: {
+    width: width,
+    position: 'absolute',
+    top: 30,
+    left: 0,
+  },
+  iconsContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    width: width,
+    zIndex: 1,
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-    marginLeft: width * 0.16, // 大约水平居中
+    paddingVertical: 5,
   },
-  image_7: {
-    width: 76,
-    height: 32,
-    marginRight: 12,
-  },
-  imageWrapper_6: {
-    height: 75,
-    width: 62,
-    position: 'absolute',
-    left: width * 0.12,
-    top: 502,
-    justifyContent: 'flex-end',
+  iconRow: {
+    width: width,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
+    // marginVertical: 1,
+  },
+  icon: {
+    width: width / 5,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  centerImage: {
+    position: 'absolute',
+    width: width * 0.9,
+    height: width * 0.7,
+    left: width * 0.05,
+    top: height * 0.3,
+    zIndex: 1,
+  },
+  imageContainer: {
+    width: 32,
+    height: 32,
+    marginRight: 5,
+  },
+  imageWrapper: {
+    width: '100%',
+    height: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  bottomButtonsContainer: {
+    position: 'absolute',
+    width: width,
+    bottom: 1,
+    left: 0,
+    zIndex: 3,
+  },
+  mailboxImage: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    bottom: height * 0.08,
+    right: width * 0.08,
+    zIndex: 1,
   },
   label_7: {
     position: 'absolute',
@@ -461,70 +440,5 @@ const styles = StyleSheet.create({
     width: width / 7,
     height: 28,
     resizeMode: 'contain',
-  },
-  bottomImage: {
-    width: width,
-    position: 'absolute',
-    top: 40,
-    left: 0,
-  },
-  iconsContainer: {
-    position: 'absolute',
-    top: 40,
-    left: 0,
-    width: width,
-    zIndex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 5,
-  },
-  iconRow: {
-    width: width,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    // marginVertical: 1,
-  },
-  icon: {
-    width: width / 5,
-    height: 100,
-    resizeMode: 'contain',
-  },
-  tabIndicator: {
-    width: 76,
-    height: 32,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: -1,
-  },
-  centerImage: {
-    position: 'absolute',
-    width: width * 0.9,
-    height: width * 0.7,
-    left: width * 0.05,
-    top: height * 0.3,
-    zIndex: 1,
-  },
-  imageContainer: {
-    width: 32,
-    height: 32,
-    marginRight: 5,
-  },
-  imageWrapper: {
-    width: '100%',
-    height: '100%',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  bottomButtonsContainer: {
-    position: 'absolute',
-    width: width,
-    bottom: 1,
-    left: 0,
-    zIndex: 3,
   },
 });

@@ -10,17 +10,18 @@ import {
   ImageBackground
 } from 'react-native';
 import { useProfile } from './hooks/useProfile';
+import BackButton from './components/BackButton';
 
 // 图片资源
 const IMAGES = {
   avatar: require('../app/assets/profile_img/FigmaDDSSlicePNG11ebb597570fa9b9276201c68e1028fa.png'),
-  backButton: require('../app/assets/profile_img/FigmaDDSSlicePNG499f5b22226fc47697b61049ad618554.png'),
   activeDay: require('../app/assets/profile_img/FigmaDDSSlicePNGdfbb002210802394edf7d400f5a7c0de.png'),
   inactiveDay: require('../app/assets/profile_img/FigmaDDSSlicePNGca17798141ccd070aee1248aca5a0d46.png'),
   pendingDay: require('../app/assets/profile_img/FigmaDDSSlicePNG817515a7d625a46276a74a11d15c0bb4.png'),
   activityIcon: require('../app/assets/profile_img/FigmaDDSSlicePNG3c3cb50fa104e9534e95ed7709262f52.png'),
   stepsIcon: require('../app/assets/profile_img/FigmaDDSSlicePNGd5176c4059ba46a35a5982e106f2ffaa.png'),
   background: require('../app/assets/profile_img/FigmaDDSSlicePNG0193b3eb53db29fe492771a60b01e010.png'),
+  back: require('./assets/img/backbutton.png'),
 };
 
 const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '今天'];
@@ -87,12 +88,13 @@ export default function ProfileScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       
       <ScrollView style={styles.scrollView}>
+        {/* 返回按钮 */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Image source={IMAGES.backButton} style={styles.backButtonImage} />
-          </TouchableOpacity>
+          <BackButton 
+            imageSource={IMAGES.back} 
+            style={styles.backButtonStyle}
+          />
         </View>
-
         <View style={styles.profileSection}>
           <Image source={IMAGES.avatar} style={styles.avatar} />
           <View style={styles.profileInfo}>
@@ -158,13 +160,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 20,
   },
-  backButton: {
-    width: 25,
-    height: 25,
-  },
-  backButtonImage: {
-    width: 25,
-    height: 25,
+  backButtonStyle: {
+    marginTop: 45,
+    marginLeft: 3,
   },
   profileSection: {
     alignItems: 'center',
