@@ -9,12 +9,15 @@ import {
   Dimensions, 
   SafeAreaView,
   StatusBar,
-  Platform 
+  Platform,
+  Animated 
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
 import TaskScreen from './TaskScreen';
 import ModalTabs from "./components/ModalTabs";
+import { WebView } from 'react-native-webview';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,6 +40,9 @@ export default function HomeScreen() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showDecorations, setShowDecorations] = useState(false);
+  const decorationSlideAnim = useState(new Animated.Value(0))[0];
+  const iconsPositionAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     // 组件挂载时预加载所有图片
@@ -105,11 +111,28 @@ export default function HomeScreen() {
     );
   };
 
+  const toggleDecorations = () => {
+    const newValue = !showDecorations;
+    setShowDecorations(newValue);
+    Animated.parallel([
+      Animated.timing(decorationSlideAnim, {
+        toValue: newValue ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(iconsPositionAnim, {
+        toValue: newValue ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+
   return (
     <SafeAreaView style={styles.page}>
       <StatusBar barStyle="dark-content" />
       <ImageBackground 
-        source={require("../app/assets/home_img/FigmaDDSSlicePNGfacb732fdaf86c52daa278a6edbef403.png")}
+        source={require("../app/assets/home_img/background.png")}
         style={styles.block_1}
         resizeMode="cover"
       >
@@ -126,10 +149,6 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
             <View style={styles.verticalLabelsContainer}>
-              <Image
-                style={styles.label_2}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNGc962ef08aac3b1b358b4af3563566ed7.png")}
-              />
               <TouchableOpacity onPress={() => setShowTaskModal(true)}>
                 <Image
                   style={styles.label_3}
@@ -137,18 +156,37 @@ export default function HomeScreen() {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-              <Image
-                style={styles.label_4}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNGd9a61de4941347fad48290e17e6d5b9d.png")}
-              />
-              <Image
-                style={styles.label_5}
-                source={require("../app/assets/home_img/FigmaDDSSlicePNGb3b272f2ee7fa5d64fdd2800391af37a.png")}
-              />
+              <TouchableOpacity>
+                <Image
+                  style={styles.label_4}
+                  source={require("../app/assets/home_img/friends.png")}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleDecorations}>
+                <Image
+                  style={styles.label_5}
+                  source={require("../app/assets/home_img/decoration.png")}
+                />
+              </TouchableOpacity>
             </View>
           </View>
           
-          <View style={styles.block_5}>
+          <Animated.View 
+            style={[
+              styles.block_5,
+              {
+                transform: [
+                  {
+                    translateY: decorationSlideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [100, 0],
+                    }),
+                  },
+                ],
+                opacity: decorationSlideAnim
+              }
+            ]}
+          >
             <View style={styles.imageWrapper_5}>
               <TouchableOpacity onPress={() => setSelectedTabIndex(0)}>
                 <View>
@@ -202,35 +240,43 @@ export default function HomeScreen() {
             </View>
             {/* 预渲染指示器 */}
             {renderIndicator()}
-          </View>
+          </Animated.View>
           
-          <TouchableOpacity 
-            style={styles.label_7} 
-            onPress={() => router.push("/record")}
-          >
+          <Animated.View style={[
+            styles.bottomButtonsContainer,
+            {
+              transform: [
+                {
+                  translateY: iconsPositionAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -240],  // 向上移动100单位
+                  })
+                }
+              ]
+            }
+          ]}>
+            <TouchableOpacity 
+              style={styles.label_7} 
+              onPress={() => router.push("/record")}
+            >
+              <Image
+                style={styles.fullSize}
+                source={require("../app/assets/home_img/record.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            
             <Image
-              style={styles.fullSize}
-              source={require("../app/assets/home_img/FigmaDDSSlicePNG5bc52336be2f3f787cb8ddaa1e0509e6.png")}
+              style={styles.newImage}
+              source={require("../app/assets/home_img/sprite.png")}
               resizeMode="contain"
             />
-          </TouchableOpacity>
-          
-          <Image
-            style={styles.newImage}
-            source={require("../app/assets/home_img/FigmaDDSSlicePNG8d2bc073980887ad18c3dc69f7f7d02e.png")}
-            resizeMode="contain"
-          />
+          </Animated.View>
         </View>
-        
       </ImageBackground>
       {showTaskModal && (
         <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
       )}
-      <Image
-        style={styles.centerImage}
-        source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}
-        resizeMode="contain"
-      />
     </SafeAreaView>
   );
 }
@@ -294,7 +340,7 @@ const styles = StyleSheet.create({
   },
   imageWrapper_1: {
     width: width * 0.9,
-    height: 48,
+    height: 70,
     marginTop: 12,
     marginLeft: width * 0.05,
     flexDirection: 'row',
@@ -306,11 +352,10 @@ const styles = StyleSheet.create({
     height: 48,
   },
   verticalLabelsContainer: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginTop: 8,
+    height: 48,
   },
   label_2: {
     width: 32,
@@ -319,17 +364,16 @@ const styles = StyleSheet.create({
   label_3: {
     width: 32,
     height: 32,
-    marginTop: 15,
+    marginRight: 15,
   },
   label_4: {
     width: 32,
     height: 32,
-    marginTop: 15,
+    marginRight: 15,
   },
   label_5: {
     width: 32,
     height: 32,
-    marginTop: 15,
   },
   block_5: {
     backgroundColor: 'rgba(196, 232, 217, 0.621)',
@@ -365,7 +409,7 @@ const styles = StyleSheet.create({
   label_7: {
     position: 'absolute',
     right: 20,
-    bottom: height * 0.05 + 50, // 定位在block_5上方
+    bottom: -150,
     width: 60,
     height: 60,
     backgroundColor: 'transparent',
@@ -374,11 +418,13 @@ const styles = StyleSheet.create({
   fullSize: {
     width: '100%',
     height: '100%',
+    position: 'absolute',
+    bottom: 0,
   },
   newImage: {
     position: 'absolute',
     left: 20,
-    bottom: height * 0.05 + 50, // 与label_7对称
+    bottom: -150,
     width: 100,
     height: 100,
     backgroundColor: 'transparent',
@@ -446,5 +492,12 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  bottomButtonsContainer: {
+    position: 'absolute',
+    width: width,
+    bottom: 1,
+    left: 0,
+    zIndex: 3,
   },
 });
