@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
 import TaskScreen from './TaskScreen';
+import ModalTabs from "./components/ModalTabs";
 
 const { width, height } = Dimensions.get('window');
 
@@ -222,7 +223,9 @@ export default function HomeScreen() {
         </View>
         
       </ImageBackground>
-      {showTaskModal && <TaskScreen onClose={() => setShowTaskModal(false)} />}
+      {showTaskModal && (
+        <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      )}
       <Image
         style={styles.centerImage}
         source={require("../app/assets/home_img/FigmaDDSSlicePNG52fe158eae9a10dd1e7ed77674089882.png")}

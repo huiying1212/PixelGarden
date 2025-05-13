@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 const tasks = [
   {
@@ -25,134 +25,41 @@ const tasks = [
   },
 ];
 
-export default function TaskScreen({ onClose }: { onClose?: () => void }) {
+export default function TaskScreen() {
   return (
-    <View style={styles.bg}>
-      <View style={styles.popup}>
-        {/* 关闭按钮 */}
-        {onClose && (
-          <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-            <Text style={styles.closeBtnText}>×</Text>
-          </TouchableOpacity>
-        )}
-        {/* 顶部Tab */}
-        <View style={styles.tabBar}>
-          <View style={styles.tabActive}>
-            <Text style={styles.tabActiveText}>任务</Text>
+    <ScrollView contentContainerStyle={styles.scroll}>
+      {tasks.map((task, idx) => (
+        <View key={idx} style={styles.card}>
+          <Text style={styles.cardTitle}>{task.title}</Text>
+          <View style={styles.progressBarWrap}>
+            <View
+              style={[
+                styles.progressBar,
+                { width: `${(task.progress / task.total) * 100}%`, backgroundColor: task.completed ? '#ffe9b0' : '#ffe9b0' },
+              ]}
+            />
+            <View style={styles.progressBarBg} />
           </View>
-          <View style={styles.tabInactive}>
-            <Text style={styles.tabInactiveText}>图鉴</Text>
+          <View style={styles.cardBottom}>
+            <Text style={styles.progressText}>
+              {task.completed
+                ? '已完成'
+                : `${task.progress} / ${task.total}`}
+            </Text>
+            <View style={[styles.rewardBox, task.completed && styles.rewardBoxActive]}>
+              <Text style={[styles.rewardText, task.completed && styles.rewardTextActive]}>
+                完成奖励
+                <Text style={{ color: '#ffb400' }}> 🪙x{task.reward}</Text>
+              </Text>
+            </View>
           </View>
         </View>
-        {/* 任务列表 */}
-        <ScrollView contentContainerStyle={styles.scroll}>
-          {tasks.map((task, idx) => (
-            <View key={idx} style={styles.card}>
-              <Text style={styles.cardTitle}>{task.title}</Text>
-              <View style={styles.progressBarWrap}>
-                <View
-                  style={[
-                    styles.progressBar,
-                    { width: `${(task.progress / task.total) * 100}%`, backgroundColor: task.completed ? '#ffe9b0' : '#ffe9b0' },
-                  ]}
-                />
-                <View style={styles.progressBarBg} />
-              </View>
-              <View style={styles.cardBottom}>
-                <Text style={styles.progressText}>
-                  {task.completed
-                    ? '已完成'
-                    : `${task.progress} / ${task.total}`}
-                </Text>
-                <View style={[styles.rewardBox, task.completed && styles.rewardBoxActive]}>
-                  <Text style={[styles.rewardText, task.completed && styles.rewardTextActive]}>
-                    完成奖励
-                    <Text style={{ color: '#ffb400' }}> 🪙x{task.reward}</Text>
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  bg: {
-    flex: 1,
-  },
-  popup: {
-    position: 'absolute',
-    left: 43,
-    top: 173,
-    width: 290,
-    height: 405,
-    backgroundColor: '#f8fff8',
-    borderRadius: 18,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 8,
-    alignItems: 'center',
-    zIndex: 9999,
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 12,
-    zIndex: 10,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeBtnText: {
-    fontSize: 22,
-    color: '#888',
-    fontWeight: 'bold',
-    lineHeight: 22,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    width: 240,
-    height: 38,
-    backgroundColor: '#eaf6ea',
-    borderRadius: 10,
-    marginBottom: 16,
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-  tabActive: {
-    flex: 1,
-    backgroundColor: '#f8fff8',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  tabInactive: {
-    flex: 1,
-    backgroundColor: '#eaf6ea',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  tabActiveText: {
-    color: '#5a7d5a',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  tabInactiveText: {
-    color: '#b0b0b0',
-    fontSize: 18,
-  },
   scroll: {
     alignItems: 'center',
     paddingBottom: 40,
@@ -160,7 +67,7 @@ const styles = StyleSheet.create({
   card: {
     width: 258,
     backgroundColor: '#f8fff8',
-    borderRadius: 14,
+    borderRadius: 0,
     padding: 16,
     marginBottom: 18,
     shadowColor: '#000',
@@ -178,7 +85,7 @@ const styles = StyleSheet.create({
   progressBarWrap: {
     height: 10,
     backgroundColor: '#f0f0f0',
-    borderRadius: 5,
+    borderRadius: 0,
     overflow: 'hidden',
     marginBottom: 8,
     position: 'relative',
@@ -208,7 +115,7 @@ const styles = StyleSheet.create({
   },
   rewardBox: {
     backgroundColor: '#f0f0f0',
-    borderRadius: 8,
+    borderRadius: 0,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
