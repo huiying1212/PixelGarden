@@ -17,9 +17,12 @@ import {
   Modal,
   SafeAreaView,
   StatusBar,
-  BackHandler
+  BackHandler,
+  Alert
 } from 'react-native';
 import { useRouter } from "expo-router";
+import { saveJournalEntry } from './services/journal.service';
+import BackButton from './components/BackButton';
 
 // 导入图片资源
 const moodImages = {
@@ -29,7 +32,7 @@ const moodImages = {
   happy: require('./assets/record_img/FigmaDDSSlicePNGa399b738278ff61d7448f60818a5a16c.png'),
   calm: require('./assets/record_img/FigmaDDSSlicePNG95285abe5c05f93f141e601330f126c9.png'),
   sad: require('./assets/record_img/FigmaDDSSlicePNG95285abe5c05f93f141e601330f126c9.png'),
-  back: require('./assets/record_img/FigmaDDSSlicePNG499f5b22226fc47697b61049ad618554.png'),
+  back: require('./assets/img/backbutton.png'),
   photoButton: require('./assets/record_img/FigmaDDSSlicePNGa387ef4dd9bb0691ab714de9e246ec32.png'),
   voiceButton: require('./assets/record_img/FigmaDDSSlicePNG28b12381100a6f1822fb51540dde2755.png'),
   background: require('./assets/record_img/FigmaDDSSlicePNG2de87e7d36b33f8b8880081a4d05c6c5.png'),
@@ -138,15 +141,25 @@ const Record = () => {
   };
   
   // 保存按钮点击处理函数
-  const handleSave = () => {
+  const handleSave = async () => {
     Keyboard.dismiss();
-    // 这里添加保存逻辑
-    console.log('保存日记', {
-      mood: selectedMood,
-      content: journalContent,
-      date: getCurrentDate(),
-      tags: selectedTags
-    });
+    
+    try {
+      const mood = selectedMood as 'excited' | 'happy' | 'calm' | 'angry' | 'anxious' | 'sad';
+      const { success, error } = await saveJournalEntry(mood, journalContent, selectedTags);
+      
+      if (success) {
+        Alert.alert('成功', '您的日记已成功保存！');
+        // 保存成功后可以返回上一页
+        router.back();
+      } else {
+        console.error('保存失败:', error);
+        Alert.alert('错误', '保存失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('保存过程中出错:', error);
+      Alert.alert('错误', '保存过程中出错，请稍后重试');
+    }
   };
   
   // 沉浸式输入模态框
@@ -250,12 +263,10 @@ const Record = () => {
             
             {/* 返回按钮 */}
             <View style={styles.imageWrapper1}>
-              <TouchableOpacity onPress={handleBack}>
-                <Image
-                  style={styles.label1}
-                  source={moodImages.back}
-                />
-              </TouchableOpacity>
+              <BackButton 
+                imageSource={moodImages.back} 
+                style={styles.backButtonStyle}
+              />
             </View>
             
             {/* 标题部分 */}
@@ -510,9 +521,7 @@ const styles = StyleSheet.create({
     marginLeft: 95,
     flexDirection: 'column',
   },
-  label1: {
-    width: 25,
-    height: 25,
+  backButtonStyle: {
     marginTop: 12,
     marginLeft: 14,
   },
