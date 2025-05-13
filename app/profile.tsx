@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   StyleSheet, 
   StatusBar, 
@@ -23,7 +22,7 @@ const IMAGES = {
   background: require('../app/assets/profile_img/FigmaDDSSlicePNG0193b3eb53db29fe492771a60b01e010.png'),
 };
 
-const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '今天'];
+const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '今天'];
 
 export default function ProfileScreen() {
   const { userInfo, isLoading, confirmLogout } = useProfile();
@@ -46,10 +45,30 @@ export default function ProfileScreen() {
   };
 
   const renderDayMarkers = () => {
-    // 模拟6天的状态，最后一天是今天（活跃）
+    // 模拟7天的状态，最后一天是今天（活跃）
     const dayStatuses = [
-      'inactive', 'inactive', 'pending', 'pending', 'inactive', 'active'
+      'inactive', 'inactive', 'pending', 'pending', 'inactive', 'inactive', 'active'
     ];
+
+    // 获取日期数组
+    const getDates = () => {
+      const dates = [];
+      const now = new Date();
+      
+      // 获取前6天的日期
+      for (let i = 6; i > 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
+      }
+      
+      // 添加今天的日期
+      dates.push(`${now.getMonth() + 1}-${now.getDate()}`);
+      
+      return dates;
+    };
+
+    const dates = getDates();
 
     return dayStatuses.map((status, index) => {
       let imageSource;
@@ -68,11 +87,11 @@ export default function ProfileScreen() {
       }
       
       return (
-        <View key={index} style={containerStyle}>
-          <Image source={imageSource} style={styles.dayMarker} />
-          {status === 'pending' && index === 2 && (
-            <Text style={styles.dateLabel}>3-12</Text>
-          )}
+        <View key={index} style={styles.markerColumn}>
+          <View style={containerStyle}>
+            <Image source={imageSource} style={styles.dayMarker} />
+          </View>
+          <Text style={styles.dateLabel}>{dates[index]}</Text>
         </View>
       );
     });
@@ -199,9 +218,9 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   weekdayText: {
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
-    width: 28,
+    width: 24,
   },
   regularDayText: {
     color: 'rgba(0, 118, 114, 0.6)',
@@ -215,20 +234,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 4,
   },
+  markerColumn: {
+    alignItems: 'center',
+  },
   dayMarkerContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(161, 213, 198, 0.34)',
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 2,
   },
   dayMarker: {
     width: 44,
     height: 44,
   },
   dateLabel: {
-    position: 'absolute',
+    marginTop: 4,
     fontSize: 10,
     color: '#093E27',
   },

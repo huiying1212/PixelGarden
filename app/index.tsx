@@ -15,7 +15,6 @@ import {
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import TaskScreen from './TaskScreen';
 import ModalTabs from "./components/ModalTabs";
 import FriendModal from "./components/FriendModal";
 import { WebView } from 'react-native-webview';
