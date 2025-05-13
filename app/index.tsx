@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TaskScreen from './TaskScreen';
 import ModalTabs from "./components/ModalTabs";
 import { WebView } from 'react-native-webview';
@@ -37,6 +38,7 @@ const preloadImages = async () => {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -129,13 +131,19 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="dark-content" />
-      <ImageBackground 
-        source={require("../app/assets/home_img/background.png")}
-        style={styles.block_1}
-        resizeMode="cover"
-      >
+    <View style={[styles.container, { paddingTop: 0 }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      
+      {/* WebGL 页面作为背景 */}
+      <WebView 
+        source={{ uri: 'https://ai-garden-flax.vercel.app/' }}
+        style={styles.webview}
+        javaScriptEnabled
+        domStorageEnabled
+        scrollEnabled={false}
+      />
+      
+      <View style={styles.contentContainer}>
         <View style={styles.group_1}>
           <View style={styles.block_2}>
             {/* 留出时间信号栏的空间 */}
@@ -273,33 +281,47 @@ export default function HomeScreen() {
             />
           </Animated.View>
         </View>
-      </ImageBackground>
+      </View>
+      
       {showTaskModal && (
         <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    position: 'relative',
-    width: width,
-    height: height,
+  container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    margin: 0,
+    padding: 0,
     overflow: 'hidden',
   },
-  block_1: {
+  webview: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  contentContainer: {
+    position: 'absolute',
     width: width,
     height: height,
-    position: 'absolute',
-    left: 0,
+    zIndex: 1,
     top: 0,
+    left: 0,
   },
   group_1: {
     position: 'relative',
     width: width,
-    height: height * 0.78, // 634px 相对于 812px 的比例
+    height: height * 0.78,
   },
   block_2: {
     width: width * 0.9, // 339px 相对于 375px 的比例
