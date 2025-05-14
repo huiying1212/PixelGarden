@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useProfile } from './hooks/useProfile';
 import BackButton from './components/BackButton';
+import { useState, useEffect } from 'react';
 
 // 图片资源
 const IMAGES = {
@@ -28,6 +29,7 @@ const BASE_WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六
 
 export default function ProfileScreen() {
   const { userInfo, isLoading, confirmLogout, journalEntry } = useProfile();
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
   
   // 园龄天数 - 实际应用中应从API获取
   const gardenDays = 56;
@@ -65,37 +67,58 @@ export default function ProfileScreen() {
     ));
   };
 
+  // 获取日期数组
+  const getDates = () => {
+    const dates = [];
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
+    
+    // 计算需要显示的日期
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(now);
+      // 计算偏移量：如果今天是周二，我们需要显示周一到周日
+      const offset = i - (today === 0 ? 6 : today - 1);
+      date.setDate(date.getDate() + offset);
+      dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
+    }
+    
+    return dates;
+  };
+
+  // 处理日期点击
+  const handleDateClick = (index: number) => {
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
+    const todayIndex = today === 0 ? 6 : today - 1;
+    
+    // 只允许点击今天和今天之前的日期
+    if (index <= todayIndex) {
+      setSelectedDate(index);
+    }
+  };
+
+  // 初始化选中今天的日期
+  useEffect(() => {
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
+    setSelectedDate(today === 0 ? 6 : today - 1);
+  }, []);
+
   const renderDayMarkers = () => {
     // 模拟7天的状态，最后一天是今天（活跃）
     const dayStatuses = [
       'inactive', 'inactive', 'pending', 'pending', 'inactive', 'inactive', 'active'
     ];
 
-    // 获取日期数组
-    const getDates = () => {
-      const dates = [];
-      const now = new Date();
-      const today = now.getDay(); // 0是周日，1是周一，以此类推
-      
-      // 计算需要显示的日期
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(now);
-        // 计算偏移量：如果今天是周二，我们需要显示周一到周日
-        const offset = i - (today === 0 ? 6 : today - 1);
-        date.setDate(date.getDate() + offset);
-        dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
-      }
-      
-      return dates;
-    };
-
     const dates = getDates();
     const now = new Date();
     const today = now.getDay(); // 0是周日，1是周一，以此类推
+    const todayIndex = today === 0 ? 6 : today - 1;
 
     return dayStatuses.map((status, index) => {
       let imageSource;
-      const isToday = index === (today === 0 ? 6 : today - 1);
+      const isToday = index === todayIndex;
+      const isClickable = index <= todayIndex;
       
       switch(status) {
         case 'active':
@@ -110,10 +133,20 @@ export default function ProfileScreen() {
       }
       
       return (
-        <View key={index} style={styles.markerColumn}>
+        <TouchableOpacity 
+          key={index} 
+          style={styles.markerColumn}
+          onPress={() => handleDateClick(index)}
+          disabled={!isClickable}
+        >
           <View style={[
             styles.dayMarkerContainer,
-            isToday && styles.todayMarkerContainer
+            // 如果是今天,且被选中或是初始状态(selectedDate为null),显示白色背景和绿色边框
+            (isToday && (selectedDate === index || selectedDate === null)) && styles.todayMarkerContainer,
+            // 如果是今天,但其他日期被选中,只显示绿色边框
+            isToday && selectedDate !== index && selectedDate !== null && styles.todayBorderOnly,
+            // 如果是选中的非今天日期,显示白色背景和绿色边框
+            !isToday && selectedDate === index && styles.todayMarkerContainer
           ]}>
             <View style={styles.dayMarkerInner}>
               <Image 
@@ -124,7 +157,7 @@ export default function ProfileScreen() {
             </View>
           </View>
           <Text style={styles.dateLabel}>{dates[index]}</Text>
-        </View>
+        </TouchableOpacity>
       );
     });
   };
@@ -313,6 +346,11 @@ const styles = StyleSheet.create({
   },
   todayMarkerContainer: {
     backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#3C7B55',
+  },
+  todayBorderOnly: {
+    backgroundColor: 'rgba(161, 213, 198, 0.34)',
     borderWidth: 2,
     borderColor: '#3C7B55',
   },
