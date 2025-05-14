@@ -41,7 +41,7 @@ const moodImages = {
 const Record = () => {
   const router = useRouter();
   const [selectedMood, setSelectedMood] = useState('happy');
-  const [journalContent, setJournalContent] = useState('今天的工作很顺利，晚上还和朋友一起去吃了火锅，开心~');
+  const [journalContent, setJournalContent] = useState('');
   const [isInputModalVisible, setInputModalVisible] = useState(false);
   const [tempJournalContent, setTempJournalContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -426,8 +426,8 @@ const Record = () => {
               onPress={openInputModal}
               activeOpacity={0.7}
             >
-              <Text style={[styles.text14, journalContent ? {} : styles.placeholder]}>
-                {journalContent || "点击这里输入今天的感受..."}
+              <Text style={[styles.text14, !journalContent ? styles.placeholder : {}]}>
+                {journalContent || "今天发生了什么？来做个记录吧...."}
               </Text>
             </TouchableOpacity>
             

@@ -27,7 +27,7 @@ const IMAGES = {
 const BASE_WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 export default function ProfileScreen() {
-  const { userInfo, isLoading, confirmLogout } = useProfile();
+  const { userInfo, isLoading, confirmLogout, journalEntry } = useProfile();
   
   // 园龄天数 - 实际应用中应从API获取
   const gardenDays = 56;
@@ -212,7 +212,11 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.moodSectionBox}>
-          <Text style={styles.moodText}>今天的工作很顺利，晚上还和朋友一起去吃了火锅，开心~</Text>
+          {journalEntry ? (
+            <Text style={styles.moodText}>{journalEntry}</Text>
+          ) : (
+            <Text style={styles.emptyMoodText}>您今天还没有写日记哦~</Text>
+          )}
         </View>
     
         <TouchableOpacity 
@@ -412,6 +416,11 @@ const styles = StyleSheet.create({
   },
   moodText: {
     color: '#093E27',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emptyMoodText: {
+    color: '#999999',
     fontSize: 14,
     lineHeight: 20,
   },

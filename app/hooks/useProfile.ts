@@ -15,11 +15,94 @@ export function useProfile() {
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [journalEntry, setJournalEntry] = useState<string | null>(null);
 
   // 获取用户信息
   useEffect(() => {
     fetchUserInfo();
   }, []);
+
+  // 获取最新日记条目
+  useEffect(() => {
+    if (userInfo?.id) {
+      fetchLatestJournalEntry(userInfo.id);
+    }
+  }, [userInfo]);
+
+  const fetchLatestJournalEntry = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('mental_health')
+        .select('journal_entry, recorded_at')
+        .eq('user_id', userId)
+        .order('recorded_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("获取日记条目失败:", error);
+        return;
+      }
+
+      // 检查记录是否是当天的
+      const isToday = checkIfRecordIsToday(data?.recorded_at);
+      
+      // 如果不是当天的记录，直接返回null
+      if (!isToday) {
+        setJournalEntry(null);
+        return;
+      }
+
+      // 处理 journal_entry 数据
+      if (data && data.journal_entry) {
+        try {
+          const journalData: any = data.journal_entry;
+          
+          // 如果是字符串，尝试解析为 JSON
+          if (typeof journalData === 'string') {
+            try {
+              const parsed = JSON.parse(journalData);
+              setJournalEntry(parsed.content || null);
+            } catch {
+              setJournalEntry(journalData);
+            }
+          } 
+          // 如果是对象或数组
+          else if (typeof journalData === 'object' && journalData !== null) {
+            if (Array.isArray(journalData) && journalData.length > 0) {
+              setJournalEntry(journalData[0].content || null);
+            } else {
+              setJournalEntry(journalData.content || null);
+            }
+          } 
+          // 其他情况
+          else {
+            setJournalEntry(String(journalData) || null);
+          }
+        } catch (error) {
+          console.error("处理日记数据失败:", error);
+          setJournalEntry(null);
+        }
+      } else {
+        setJournalEntry(null);
+      }
+    } catch (error) {
+      console.error("获取日记条目失败:", error);
+      setJournalEntry(null);
+    }
+  };
+
+  // 检查记录是否是当天添加的
+  const checkIfRecordIsToday = (recordedAt: string | null): boolean => {
+    if (!recordedAt) return false;
+    
+    const recordDate = new Date(recordedAt);
+    const today = new Date();
+    
+    return recordDate.getDate() === today.getDate() && 
+           recordDate.getMonth() === today.getMonth() && 
+           recordDate.getFullYear() === today.getFullYear();
+  };
 
   const fetchUserInfo = async () => {
     try {
@@ -110,6 +193,7 @@ export function useProfile() {
     isLoading,
     fetchUserInfo,
     confirmLogout,
-    logout
+    logout,
+    journalEntry
   };
 } 
