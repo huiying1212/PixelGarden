@@ -43,6 +43,7 @@ export default function HomeScreen() {
   const [showFriendModal, setShowFriendModal] = useState(false);
   const [showDecorations, setShowDecorations] = useState(false);
   const [showPlantModal, setShowPlantModal] = useState(false);
+  const [sunAmount, setSunAmount] = useState(100);
   const decorationSlideAnim = useState(new Animated.Value(0))[0];
   const iconsPositionAnim = useState(new Animated.Value(0))[0];
   const [isMessageModalVisible, setMessageModalVisible] = useState(false);
@@ -122,6 +123,10 @@ export default function HomeScreen() {
     ]).start();
   };
 
+  const updateSunAmount = (amount: number) => {
+    setSunAmount(prev => prev + amount);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: 0 }]}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
@@ -164,7 +169,7 @@ export default function HomeScreen() {
                     style={styles.sunIcon}
                     resizeMode="contain"
                   />
-                  <Text style={styles.infoPanelText}>100</Text>
+                  <Text style={styles.infoPanelText}>{sunAmount}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -196,11 +201,11 @@ export default function HomeScreen() {
             style={styles.mailboxButton}
             onPress={() => setMessageModalVisible(true)}
           >
-            <Image 
-              source={require("../app/assets/home_img/mailbox.png")} 
+          <Image
+            source={require("../app/assets/home_img/mailbox.png")}
               style={styles.mailboxIcon}
-              resizeMode="contain"
-            />
+            resizeMode="contain"
+          />
           </TouchableOpacity>
           
           <Animated.View 
@@ -269,18 +274,21 @@ export default function HomeScreen() {
               }}
             >
               <Image
-                source={require("../app/assets/home_img/sprite.png")}
+              source={require("../app/assets/home_img/sprite.png")}
                 style={styles.fullSize}
-                resizeMode="contain"
-              />
+              resizeMode="contain"
+            />
             </TouchableOpacity>
           </Animated.View>
         </View>
       </View>
       
-      {showTaskModal && (
-        <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
-      )}
+      {/* 各种模态框 */}
+      <ModalTabs 
+        visible={showTaskModal} 
+        onClose={() => setShowTaskModal(false)}
+        updateSunAmount={updateSunAmount}
+      />
       {showFriendModal && (
         <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
       )}

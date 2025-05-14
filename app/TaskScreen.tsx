@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 
-const tasks = [
+interface TaskScreenProps {
+  updateSunAmount?: (amount: number) => void;
+}
+
+const initialTasks = [
   {
     title: '今天查看你的花园',
     progress: 1,
     total: 1,
     reward: 10,
     completed: true,
+    rewardClaimed: false,
   },
   {
     title: '今天走5000步',
@@ -15,6 +20,7 @@ const tasks = [
     total: 5000,
     reward: 10,
     completed: false,
+    rewardClaimed: false,
   },
   {
     title: '今天睡眠时长8小时',
@@ -22,10 +28,23 @@ const tasks = [
     total: 8,
     reward: 10,
     completed: false,
+    rewardClaimed: false,
   },
 ];
 
-export default function TaskScreen() {
+export default function TaskScreen({ updateSunAmount }: TaskScreenProps) {
+  const [tasks, setTasks] = useState(initialTasks);
+
+  const handleClaimReward = (index: number) => {
+    if (tasks[index].completed && !tasks[index].rewardClaimed) {
+      const newTasks = [...tasks];
+      newTasks[index].rewardClaimed = true;
+      setTasks(newTasks);
+      // 更新阳光值
+      updateSunAmount?.(tasks[index].reward);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
       {tasks.map((task, idx) => (
@@ -46,18 +65,35 @@ export default function TaskScreen() {
                 ? '已完成'
                 : `${task.progress} / ${task.total}`}
             </Text>
-            <View style={[styles.rewardBox, task.completed && styles.rewardBoxActive]}>
-              <View style={styles.rewardContent}>
-                <Text style={[styles.rewardText, task.completed && styles.rewardTextActive]}>
-                  完成奖励
-                </Text>
-                <Image
-                  source={require('./assets/flowers/sun.png')}
-                  style={styles.coinIcon}
-                />
-                <Text style={[styles.rewardText, { color: '#ffb400' }]}>x{task.reward}</Text>
+            <TouchableOpacity 
+              onPress={() => handleClaimReward(idx)}
+              disabled={!task.completed || task.rewardClaimed}
+            >
+              <View style={[
+                styles.rewardBox, 
+                task.completed && !task.rewardClaimed && styles.rewardBoxActive,
+                task.rewardClaimed && styles.rewardBoxClaimed
+              ]}>
+                <View style={styles.rewardContent}>
+                  <Text style={[
+                    styles.rewardText,
+                    task.completed && !task.rewardClaimed && styles.rewardTextActive,
+                    task.rewardClaimed && styles.rewardTextClaimed
+                  ]}>
+                    {task.rewardClaimed ? '已领取' : '完成奖励'}
+                  </Text>
+                  <Image
+                    source={require('./assets/flowers/sun.png')}
+                    style={styles.coinIcon}
+                  />
+                  <Text style={[
+                    styles.rewardText,
+                    { color: '#ffb400' },
+                    task.rewardClaimed && styles.rewardTextClaimed
+                  ]}>x{task.reward}</Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       ))}
@@ -128,6 +164,9 @@ const styles = StyleSheet.create({
   rewardBoxActive: {
     backgroundColor: '#e0ffd0',
   },
+  rewardBoxClaimed: {
+    backgroundColor: '#f0f0f0',
+  },
   rewardText: {
     color: '#b0b0b0',
     fontSize: 14,
@@ -135,6 +174,9 @@ const styles = StyleSheet.create({
   },
   rewardTextActive: {
     color: '#5a7d5a',
+  },
+  rewardTextClaimed: {
+    color: '#b0b0b0',
   },
   rewardContent: {
     flexDirection: 'row',

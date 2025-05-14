@@ -8,9 +8,10 @@ const { width, height } = Dimensions.get('window');
 interface ModalTabsProps {
   visible: boolean;
   onClose: () => void;
+  updateSunAmount?: (amount: number) => void;
 }
 
-export default function ModalTabs({ visible, onClose }: ModalTabsProps) {
+export default function ModalTabs({ visible, onClose, updateSunAmount }: ModalTabsProps) {
   const [activeTab, setActiveTab] = useState<"task" | "gallery">("task");
   const [isReady, setIsReady] = useState(false);
 
@@ -50,7 +51,7 @@ export default function ModalTabs({ visible, onClose }: ModalTabsProps) {
 
             {/* 主内容区域 */}
             <View style={styles.contentArea}>
-              {activeTab === "task" ? <TaskScreen /> : <GalleryScreen />}
+              {activeTab === "task" ? <TaskScreen updateSunAmount={updateSunAmount} /> : <GalleryScreen />}
             </View>
 
             {/* 关闭按钮（位于弹窗下方一定距离） */}

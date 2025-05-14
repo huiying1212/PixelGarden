@@ -8,6 +8,7 @@ import {
   ScrollView,
   Modal
 } from 'react-native';
+import ReplyModal from './ReplyModal';
 
 // 模拟好友数据
 const friends = [
@@ -28,6 +29,8 @@ interface FriendModalProps {
 
 export default function FriendModal({ visible, onClose }: FriendModalProps) {
   const [isReady, setIsReady] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState<{name: string, avatar: any} | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -36,6 +39,11 @@ export default function FriendModal({ visible, onClose }: FriendModalProps) {
       setIsReady(false);
     }
   }, [visible]);
+
+  const handleWriteLetter = (friend: {name: string, avatar: any}) => {
+    setSelectedFriend(friend);
+    setShowReplyModal(true);
+  };
 
   return (
     <Modal
@@ -73,7 +81,10 @@ export default function FriendModal({ visible, onClose }: FriendModalProps) {
                     <Text style={styles.friendName}>{friend.name}</Text>
                   </View>
                   <View style={styles.actionButtons}>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleWriteLetter(friend)}
+                    >
                       <Image
                         style={styles.actionIcon}
                         source={require('../assets/friend_img/letter.png')}
@@ -108,7 +119,10 @@ export default function FriendModal({ visible, onClose }: FriendModalProps) {
                     <TouchableOpacity style={styles.actionButton}>
                       <Text style={styles.addText}>添加</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleWriteLetter(stranger)}
+                    >
                       <Image
                         style={styles.actionIcon}
                         source={require('../assets/friend_img/letter.png')}
@@ -134,6 +148,23 @@ export default function FriendModal({ visible, onClose }: FriendModalProps) {
           </View>
         )}
       </View>
+
+      {/* 回信模态框 */}
+      {selectedFriend && (
+        <ReplyModal
+          visible={showReplyModal}
+          onClose={() => {
+            setShowReplyModal(false);
+            setSelectedFriend(null);
+          }}
+          message={{
+            name: selectedFriend.name,
+            preview: '',
+            avatar: selectedFriend.avatar,
+            type: 'letter1'
+          }}
+        />
+      )}
     </Modal>
   );
 }
