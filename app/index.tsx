@@ -44,19 +44,21 @@ import React, { useState, useEffect } from "react";
     await Promise.all(images.map(image => Asset.fromModule(image).downloadAsync()));
   };
 
-  export default function HomeScreen() {
-    const router = useRouter();
-    const insets = useSafeAreaInsets();
-    const [imagesLoaded, setImagesLoaded] = useState(false);
-    const [showTaskModal, setShowTaskModal] = useState(false);
-    const [showFriendModal, setShowFriendModal] = useState(false);
-    const [showDecorations, setShowDecorations] = useState(false);
-    const decorationSlideAnim = useState(new Animated.Value(0))[0];
-    const iconsPositionAnim = useState(new Animated.Value(0))[0];
-    const [isMessageModalVisible, setMessageModalVisible] = useState(false);
-    const [dialogIndex, setDialogIndex] = useState(0);
-    const [showDialog, setShowDialog] = useState(true);
-    const [selectedIcons, setSelectedIcons] = useState([false, false, false, false, false, false, false, false]);
+export default function HomeScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showFriendModal, setShowFriendModal] = useState(false);
+  const [showDecorations, setShowDecorations] = useState(false);
+  const [showPlantModal, setShowPlantModal] = useState(false);
+  const [sunAmount, setSunAmount] = useState(100);
+  const decorationSlideAnim = useState(new Animated.Value(0))[0];
+  const iconsPositionAnim = useState(new Animated.Value(0))[0];
+  const [isMessageModalVisible, setMessageModalVisible] = useState(false);
+  const [dialogIndex, setDialogIndex] = useState(0);
+  const [showDialog, setShowDialog] = useState(true);
+
 
     const dialogMessages = [
       "欢迎来到花园🌱",
@@ -177,171 +179,210 @@ import React, { useState, useEffect } from "react";
       return icons;
     };
 
-    const toggleDecorations = () => {
-      const newValue = !showDecorations;
-      setShowDecorations(newValue);
-      Animated.parallel([
-        Animated.timing(decorationSlideAnim, {
-          toValue: newValue ? 1 : 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(iconsPositionAnim, {
-          toValue: newValue ? 1 : 0,
-          duration: 300,
-          useNativeDriver: true,
-        })
-      ]).start();
-    };
+// 从 ps-newthings 引入
+const updateSunAmount = (amount: number) => {
+  setSunAmount(prev => prev + amount);
+};
 
-    return (
-      <View style={[styles.container, { paddingTop: 0 }]}>
-        <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
-       
-        {/* WebGL 页面作为背景 */}
-        <WebView
-          source={{ uri: 'https://ai-garden-flax.vercel.app/' }}
-          style={styles.webview}
-          javaScriptEnabled
-          domStorageEnabled
-          scrollEnabled={false}
-        />
-       
-        <View style={styles.contentContainer}>
-          <View style={styles.group_1}>
-            <View style={styles.block_2}>
-              {/* 留出时间信号栏的空间 */}
-            </View>
-           
-            <View style={styles.imageWrapper_1}>
-              <TouchableOpacity onPress={() => router.push("/profile")}>
-                <Image
-                  style={styles.label_1}
-                  source={require("../app/assets/home_img/FigmaDDSSlicePNG4d18dfe8145a98ae121d9b0d26ddcd2c.png")}
-                />
-              </TouchableOpacity>
-              <View style={styles.verticalLabelsContainer}>
-                <TouchableOpacity onPress={() => setShowTaskModal(true)}>
-                  <Image
-                    style={styles.label_3}
-                    source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShowFriendModal(true)}>
-                  <Image
-                    style={styles.label_4}
-                    source={require("../app/assets/home_img/friends.png")}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={toggleDecorations}>
-                  <Image
-                    style={styles.label_5}
-                    source={require("../app/assets/home_img/decoration.png")}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-           
-            <TouchableOpacity
-              style={styles.mailboxButton}
-              onPress={() => setMessageModalVisible(true)}
-            >
-              <Image
-                source={require("../app/assets/home_img/mailbox.png")}
-                style={styles.mailboxIcon}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-           
-            <Animated.View
-              style={[
-                styles.block_5,
-                {
-                  transform: [
-                    {
-                      translateY: decorationSlideAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [100, 0],
-                      }),
-                    },
-                  ],
-                  opacity: decorationSlideAnim
-                }
-              ]}
-            >
-              <Image
-                style={styles.bottomImage}
-                source={require("../app/assets/home_img/Rectangle45.png")}
-              />
-              <View style={styles.iconsContainer}>
-                {renderIcons()}
-              </View>
-            </Animated.View>
-           
-            <Animated.View style={[
-              styles.bottomButtonsContainer,
-              {
-                transform: [
-                  {
-                    translateY: iconsPositionAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, -215],  // 向上移动100单位
-                    })
-                  }
-                ]
-              }
-            ]}>
-              {showDialog && (
-                <ImageBackground
-                  source={require("../app/assets/home_img/talk.png")}
-                  style={styles.dialogBubble}
-                  imageStyle={{resizeMode: 'stretch'}}
-                >
-                  <Text style={styles.dialogText}>{dialogMessages[dialogIndex]}</Text>
-                </ImageBackground>
-              )}
-              <TouchableOpacity
-                style={styles.label_7}
-                onPress={() => router.push("/record")}
-              >
-                <Image
-                  style={styles.fullSize}
-                  source={require("../app/assets/home_img/record.png")}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-             
-              <TouchableOpacity
-                style={styles.newImage}
-                onPress={() => {
-                  setDialogIndex((prev) => (prev + 1) % dialogMessages.length);
-                  setShowDialog(true);
-                }}
-              >
-                <Image
-                  source={require("../app/assets/home_img/sprite.png")}
-                  style={styles.fullSize}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-        </View>
-       
-        {showTaskModal && (
-          <ModalTabs visible={showTaskModal} onClose={() => setShowTaskModal(false)} />
-        )}
-        {showFriendModal && (
-          <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
-        )}
-        <MessageModal
-          visible={isMessageModalVisible}
-          onClose={() => setMessageModalVisible(false)}
-        />
-      </View>
-    );
-  }
+// 从 page-refined 引入
+const toggleDecorations = () => {
+  const newValue = !showDecorations;
+  setShowDecorations(newValue);
+  Animated.parallel([
+    Animated.timing(decorationSlideAnim, {
+      toValue: newValue ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true, // 假设你希望保留 page-refined 的 useNativeDriver: true
+    }),
+    Animated.timing(iconsPositionAnim, {
+      toValue: newValue ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true, // 假设你希望保留 page-refined 的 useNativeDriver: true
+    })
+  ]).start();
+};
+
+return (
+  <View style={[styles.container, { paddingTop: 0 }]}>
+    <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
+    {/* WebGL 页面作为背景 */}
+    <WebView
+      source={{ uri: 'https://ai-garden-flax.vercel.app/' }}
+      style={styles.webview}
+      javaScriptEnabled
+      domStorageEnabled
+      scrollEnabled={false}
+    />
+
+    <View style={styles.contentContainer}>
+      <View style={styles.group_1}>
+        <View style={styles.block_2}>
+          {/* 留出时间信号栏的空间 */}
+        </View>
+
+        <View style={styles.imageWrapper_1}>
+          <TouchableOpacity onPress={() => router.push("/profile")}>
+            <Image
+              style={styles.label_1}
+              source={require("../app/assets/home_img/FigmaDDSSlicePNG4d18dfe8145a98ae121d9b0d26ddcd2c.png")}
+            />
+          </TouchableOpacity>
+
+          {/* 从 ps-newthings 引入 infoPanelContainer */}
+          <View style={styles.infoPanelContainer}>
+            <View style={styles.infoPanelRow}>
+              <Text style={styles.infoPanelText}>第1天 / 第2周</Text>
+            </View>
+            <View style={[styles.infoPanelRow, styles.sunRow]}>
+              <TouchableOpacity
+                style={styles.sunButton}
+                onPress={() => setShowPlantModal(true)} // 来自 ps-newthings
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={require("../app/assets/flowers/sun.png")} // 来自 ps-newthings
+                  style={styles.sunIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.infoPanelText}>{sunAmount}</Text> {/* 来自 ps-newthings */}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* verticalLabelsContainer 两个分支中是相同的 */}
+          <View style={styles.verticalLabelsContainer}>
+            <TouchableOpacity onPress={() => setShowTaskModal(true)}>
+              <Image
+                style={styles.label_3}
+                source={require("../app/assets/home_img/FigmaDDSSlicePNG87c41bd798edc555eb194a583e39b1a3.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowFriendModal(true)}>
+              <Image
+                style={styles.label_4}
+                source={require("../app/assets/home_img/friends.png")}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleDecorations}> {/* onPress 来自 page-refined */}
+              <Image
+                style={styles.label_5}
+                source={require("../app/assets/home_img/decoration.png")}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.mailboxButton}
+          onPress={() => setMessageModalVisible(true)}
+        >
+          <Image
+            source={require("../app/assets/home_img/mailbox.png")}
+            style={styles.mailboxIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <Animated.View
+          style={[
+            styles.block_5,
+            {
+              transform: [
+                {
+                  translateY: decorationSlideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [100, 0],
+                  }),
+                },
+              ],
+              opacity: decorationSlideAnim
+            }
+          ]}
+        >
+          <Image
+            style={styles.bottomImage}
+            source={require("../app/assets/home_img/Rectangle45.png")}
+          />
+          <View style={styles.iconsContainer}>
+            {renderIcons()}
+          </View>
+        </Animated.View>
+
+        <Animated.View style={[
+          styles.bottomButtonsContainer,
+          {
+            transform: [
+              {
+                translateY: iconsPositionAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, -215], // 向上移动100单位 (原文注释是100，但代码是215，以代码为准)
+                })
+              }
+            ]
+          }
+        ]}>
+          {showDialog && (
+            <ImageBackground
+              source={require("../app/assets/home_img/talk.png")}
+              style={styles.dialogBubble}
+              imageStyle={{resizeMode: 'stretch'}}
+            >
+              <Text style={styles.dialogText}>{dialogMessages[dialogIndex]}</Text>
+            </ImageBackground>
+          )}
+          <TouchableOpacity
+            style={styles.label_7}
+            onPress={() => router.push("/record")}
+          >
+            <Image
+              style={styles.fullSize}
+              source={require("../app/assets/home_img/record.png")}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.newImage}
+            onPress={() => {
+              setDialogIndex((prev) => (prev + 1) % dialogMessages.length);
+              setShowDialog(true);
+            }}
+          >
+            <Image
+              source={require("../app/assets/home_img/sprite.png")}
+              style={styles.fullSize}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </View>
+
+    {/* 各种模态框 */}
+    {/* 合并 ModalTabs: 使用 ps-newthings 的 prop，可以选择 page-refined 的渲染风格 */}
+    <ModalTabs
+      visible={showTaskModal}
+      onClose={() => setShowTaskModal(false)}
+      updateSunAmount={updateSunAmount} // 来自 ps-newthings
+    />
+    {/* FriendModal: 保持 page-refined 的渲染风格或改为直接渲染 */}
+    {showFriendModal && (
+      <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
+    )}
+    <MessageModal
+      visible={isMessageModalVisible}
+      onClose={() => setMessageModalVisible(false)}
+    />
+    {/* 从 ps-newthings 引入 PlantModal */}
+    <PlantModal
+      visible={showPlantModal}
+      onClose={() => setShowPlantModal(false)}
+    />
+  </View>
+);
+}
 
   const styles = StyleSheet.create({
     container: {
