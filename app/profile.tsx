@@ -155,7 +155,7 @@ export default function ProfileScreen() {
                 resizeMode="contain"
               />
             </View>
-        </View>
+          </View>
           <Text style={styles.dateLabel}>{dates[index]}</Text>
         </TouchableOpacity>
       );
@@ -213,7 +213,7 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#009688' }]}>步数</Text>
             </View>
             <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
-              12345<Text style={styles.statValueSub}>/9000</Text><Text style={styles.statUnit}>步</Text>
+              12345<Text style={styles.statUnit}>步</Text>
             </Text>
           </View>
           <View style={styles.statBlock}>
@@ -226,7 +226,7 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#F44336' }]}>卡路里</Text>
             </View>
             <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
-              961<Text style={styles.statValueSub}>/600</Text><Text style={styles.statUnit}>千卡</Text>
+              961<Text style={styles.statUnit}>千卡</Text>
             </Text>
           </View>
           <View style={styles.statBlock}>
@@ -239,7 +239,7 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#00B8F6' }]}>睡眠时长</Text>
             </View>
             <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
-              7.5<Text style={styles.statValueSub}>/8</Text><Text style={styles.statUnit}>小时</Text>
+              7.5<Text style={styles.statUnit}>小时</Text>
             </Text>
           </View>
         </View>

@@ -265,6 +265,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginBottom: 5,
+    resizeMode: 'contain',
   },
   actionText: {
     fontSize: 12,
