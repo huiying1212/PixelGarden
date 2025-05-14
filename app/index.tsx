@@ -44,6 +44,16 @@ export default function HomeScreen() {
   const decorationSlideAnim = useState(new Animated.Value(0))[0];
   const iconsPositionAnim = useState(new Animated.Value(0))[0];
   const [isMessageModalVisible, setMessageModalVisible] = useState(false);
+  const [dialogIndex, setDialogIndex] = useState(0);
+  const [showDialog, setShowDialog] = useState(true);
+
+  const dialogMessages = [
+    "欢迎来到花园🌱",
+    "点击我继续说话～",
+    "小花很有精神，你的悉心照料让它茁壮成长！",
+    "太棒了！因为有你，花园更加生机勃勃",
+    "好久没来看我啦，我有点想你~",
+  ];
 
   useEffect(() => {
     // 组件挂载时预加载所有图片
@@ -208,6 +218,15 @@ export default function HomeScreen() {
               ]
             }
           ]}>
+            {showDialog && (
+              <ImageBackground
+                source={require("../app/assets/home_img/talk.png")}
+                style={styles.dialogBubble}
+                imageStyle={{resizeMode: 'stretch'}}
+              >
+                <Text style={styles.dialogText}>{dialogMessages[dialogIndex]}</Text>
+              </ImageBackground>
+            )}
             <TouchableOpacity 
               style={styles.label_7} 
               onPress={() => router.push("/record")}
@@ -219,11 +238,19 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
             
-            <Image
+            <TouchableOpacity
               style={styles.newImage}
-              source={require("../app/assets/home_img/sprite.png")}
-              resizeMode="contain"
-            />
+              onPress={() => {
+                setDialogIndex((prev) => (prev + 1) % dialogMessages.length);
+                setShowDialog(true);
+              }}
+            >
+              <Image
+                source={require("../app/assets/home_img/sprite.png")}
+                style={styles.fullSize}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
           </Animated.View>
         </View>
       </View>
@@ -454,5 +481,23 @@ const styles = StyleSheet.create({
     width: width / 7,
     height: 28,
     resizeMode: 'contain',
+  },
+  dialogBubble: {
+    position: 'absolute',
+    left: 40,
+    bottom: -60,
+    width: width * 0.5,
+    aspectRatio: 3,
+    zIndex: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dialogText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginHorizontal: 10,
+    marginVertical: 10,
+    marginTop: 1,
   },
 });
