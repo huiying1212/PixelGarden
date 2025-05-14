@@ -19,6 +19,7 @@ import ModalTabs from "./components/ModalTabs";
 import FriendModal from "./components/FriendModal";
 import { WebView } from 'react-native-webview';
 import MessageModal from './components/MessageModal';
+import PlantModal from './components/PlantModal';
 
 
 const { width, height } = Dimensions.get('window');
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showFriendModal, setShowFriendModal] = useState(false);
   const [showDecorations, setShowDecorations] = useState(false);
+  const [showPlantModal, setShowPlantModal] = useState(false);
   const decorationSlideAnim = useState(new Animated.Value(0))[0];
   const iconsPositionAnim = useState(new Animated.Value(0))[0];
   const [isMessageModalVisible, setMessageModalVisible] = useState(false);
@@ -146,6 +148,27 @@ export default function HomeScreen() {
                 source={require("../app/assets/home_img/FigmaDDSSlicePNG4d18dfe8145a98ae121d9b0d26ddcd2c.png")}
               />
             </TouchableOpacity>
+            
+            <View style={styles.infoPanelContainer}>
+              <View style={styles.infoPanelRow}>
+                <Text style={styles.infoPanelText}>第1天 / 第2周</Text>
+              </View>
+              <View style={[styles.infoPanelRow, styles.sunRow]}>
+                <TouchableOpacity 
+                  style={styles.sunButton}
+                  onPress={() => setShowPlantModal(true)}
+                  activeOpacity={0.7}
+                >
+                  <Image 
+                    source={require("../app/assets/flowers/sun.png")}
+                    style={styles.sunIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.infoPanelText}>100</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <View style={styles.verticalLabelsContainer}>
               <TouchableOpacity onPress={() => setShowTaskModal(true)}>
                 <Image
@@ -265,6 +288,10 @@ export default function HomeScreen() {
         visible={isMessageModalVisible}
         onClose={() => setMessageModalVisible(false)}
       />
+      <PlantModal
+        visible={showPlantModal}
+        onClose={() => setShowPlantModal(false)}
+      />
     </View>
   );
 }
@@ -357,6 +384,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     height: 48,
+    marginLeft: 0,
   },
   label_2: {
     width: 32,
@@ -499,5 +527,39 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginVertical: 10,
     marginTop: 1,
+  },
+  infoPanelContainer: {
+    position: 'absolute',
+    left: 60,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: 48,
+  },
+  infoPanelRow: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sunRow: {
+    marginTop: 4,
+  },
+  infoPanelText: {
+    color: '#3C7B55',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sunIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+  },
+  sunButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
 });
