@@ -155,7 +155,7 @@ export default function ProfileScreen() {
                 resizeMode="contain"
               />
             </View>
-          </View>
+        </View>
           <Text style={styles.dateLabel}>{dates[index]}</Text>
         </TouchableOpacity>
       );
@@ -275,7 +275,9 @@ const styles = StyleSheet.create({
   header: {
     height: 50,
     paddingHorizontal: 14,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
     marginTop: 20,
   },
   backButtonStyle: {

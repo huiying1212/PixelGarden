@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ModalTabs from "./components/ModalTabs";
 import FriendModal from "./components/FriendModal";
 import { WebView } from 'react-native-webview';
+import MessageModal from './components/MessageModal';
 
 
 const { width, height } = Dimensions.get('window');
@@ -42,6 +43,7 @@ export default function HomeScreen() {
   const [showDecorations, setShowDecorations] = useState(false);
   const decorationSlideAnim = useState(new Animated.Value(0))[0];
   const iconsPositionAnim = useState(new Animated.Value(0))[0];
+  const [isMessageModalVisible, setMessageModalVisible] = useState(false);
 
   useEffect(() => {
     // 组件挂载时预加载所有图片
@@ -157,11 +159,16 @@ export default function HomeScreen() {
             </View>
           </View>
           
-          <Image
-            style={styles.mailboxImage}
-            source={require("../app/assets/home_img/mailbox.png")}
-            resizeMode="contain"
-          />
+          <TouchableOpacity 
+            style={styles.mailboxButton}
+            onPress={() => setMessageModalVisible(true)}
+          >
+            <Image 
+              source={require("../app/assets/home_img/mailbox.png")} 
+              style={styles.mailboxIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
           
           <Animated.View 
             style={[
@@ -227,6 +234,10 @@ export default function HomeScreen() {
       {showFriendModal && (
         <FriendModal visible={showFriendModal} onClose={() => setShowFriendModal(false)} />
       )}
+      <MessageModal 
+        visible={isMessageModalVisible}
+        onClose={() => setMessageModalVisible(false)}
+      />
     </View>
   );
 }
@@ -403,13 +414,17 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 3,
   },
-  mailboxImage: {
+  mailboxButton: {
     position: 'absolute',
+    right: width * 0.08,
+    bottom: height * 0.08,
     width: 60,
     height: 60,
-    bottom: height * 0.08,
-    right: width * 0.08,
     zIndex: 1,
+  },
+  mailboxIcon: {
+    width: '100%',
+    height: '100%',
   },
   label_7: {
     position: 'absolute',
