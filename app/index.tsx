@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Image,
@@ -10,7 +10,11 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-  Animated
+  Animated,
+  PanResponder,
+  PanResponderInstance,
+  GestureResponderEvent,
+  PanResponderGestureState
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
@@ -52,13 +56,20 @@ export default function HomeScreen() {
   const [showFriendModal, setShowFriendModal] = useState(false);
   const [showDecorations, setShowDecorations] = useState(false);
   const [showPlantModal, setShowPlantModal] = useState(false);
-  const [sunAmount, setSunAmount] = useState(100);
-  const decorationSlideAnim = useState(new Animated.Value(0))[0];
-  const iconsPositionAnim = useState(new Animated.Value(0))[0];
+  const decorationSlideAnim = useRef(new Animated.Value(0)).current;
+  const iconsPositionAnim = useRef(new Animated.Value(0)).current;
   const [isMessageModalVisible, setMessageModalVisible] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
   const [showDialog, setShowDialog] = useState(true);
   const [selectedIcons, setSelectedIcons] = useState(Array(8).fill(false));
+  const [sunAmount, setSunAmount] = useState(100);
+  
+  // 拖拽功能相关状态
+  const iconPositions = useRef(
+    Array(8).fill(null).map(() => new Animated.ValueXY())
+  ).current;
+  const panResponders = useRef<PanResponderInstance[]>([]).current;
+  const [draggingIconIndex, setDraggingIconIndex] = useState<number | null>(null);
 
   const dialogMessages = [
     "欢迎来到花园🌱",
@@ -82,6 +93,28 @@ export default function HomeScreen() {
     };
 
     loadImages();
+    
+    // 初始化所有图标的拖拽功能
+    iconPositions.forEach((pos, index) => {
+      const panResponder = PanResponder.create({
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+          setDraggingIconIndex(index);
+          // 保存当前位置作为偏移量
+          pos.extractOffset();
+          // 重置临时移动值为0, 0
+          pos.setValue({ x: 0, y: 0 });
+        },
+        onPanResponderMove: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+          pos.setValue({x: gestureState.dx, y: gestureState.dy });
+        },
+        onPanResponderRelease: () => {
+          pos.flattenOffset();
+          setDraggingIconIndex(null);
+        },
+      });
+      panResponders[index] = panResponder;
+    });
   }, []);
 
   const renderIcons = () => {
@@ -134,39 +167,62 @@ export default function HomeScreen() {
               iconSource = require("../app/assets/home_img/1.png");
           }
          
-          // 为所有图标使用统一的容器结构
-          rowIcons.push(
-            <TouchableOpacity
-              key={`icon-container-${iconIndex}`}
-              style={styles.iconWithBaseContainer}
-              onPress={() => handleIconPress(iconIndex)}
-            >
-              {/* 1-6号图标根据选中状态显示不同底图 */}
-              {iconIndex <= 5 && (
-                <Image
-                  style={styles.iconBase}
-                  source={selectedIcons[iconIndex]
-                    ? require("../app/assets/home_img/used.png")
-                    : require("../app/assets/home_img/unused.png")
-                  }
-                />
-              )}
-             
-              {/* 7-8号图标显示unget.png底图 */}
-              {(iconIndex === 6 || iconIndex === 7) && (
+          // 确保panResponder已初始化
+          if (!panResponders[iconIndex]) {
+            rowIcons.push(<View key={`icon-placeholder-${iconIndex}`} style={styles.iconWithBaseContainer} />);
+            continue;
+          }
+
+          // 对1-6号图标实现拖拽功能
+          if (iconIndex <= 5) {
+            rowIcons.push(
+              <Animated.View
+                key={`draggable-icon-${iconIndex}`}
+                style={[
+                  iconPositions[iconIndex].getLayout(),
+                  { zIndex: draggingIconIndex === iconIndex ? 99 : 1 }
+                ]}
+                {...panResponders[iconIndex].panHandlers}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => handleIconPress(iconIndex)}
+                  style={styles.iconWithBaseContainer}
+                >
+                  <Image
+                    style={styles.iconBase}
+                    source={selectedIcons[iconIndex]
+                      ? require("../app/assets/home_img/used.png")
+                      : require("../app/assets/home_img/unused.png")
+                    }
+                  />
+                  <Image
+                    style={styles.icon}
+                    source={iconSource}
+                  />
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          } else {
+            // 7-8号图标保持原有的非拖拽形式
+            rowIcons.push(
+              <TouchableOpacity
+                key={`icon-container-${iconIndex}`}
+                style={styles.iconWithBaseContainer}
+                onPress={() => handleIconPress(iconIndex)}
+              >
                 <Image
                   style={styles.iconBase}
                   source={require("../app/assets/home_img/unget.png")}
                 />
-              )}
-             
-              <Image
-                key={`icon-${iconIndex}`}
-                style={styles.icon}
-                source={iconSource}
-              />
-            </TouchableOpacity>
-          );
+                <Image
+                  key={`icon-${iconIndex}`}
+                  style={styles.icon}
+                  source={iconSource}
+                />
+              </TouchableOpacity>
+            );
+          }
         }
       }
       icons.push(
@@ -632,37 +688,37 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   infoPanelContainer: {
-    position: 'absolute',
-    left: 60,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    height: 48,
+    position: 'absolute',
+    left: 60,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: 48,
   },
   infoPanelRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginVertical: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sunRow: {
-    marginTop: 4,
-  },
-  infoPanelText: {
-    color: '#3C7B55',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sunIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 4,
-  },
-  sunButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-  },
+    marginTop: 4,
+  },
+  infoPanelText: {
+    color: '#3C7B55',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sunIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+  },
+  sunButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
 });
