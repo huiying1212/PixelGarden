@@ -155,7 +155,7 @@ export default function ProfileScreen() {
                 resizeMode="contain"
               />
             </View>
-        </View>
+          </View>
           <Text style={styles.dateLabel}>{dates[index]}</Text>
         </TouchableOpacity>
       );
