@@ -24,6 +24,7 @@ import FriendModal from "./components/FriendModal";
 import { WebView } from 'react-native-webview';
 import MessageModal from './components/MessageModal';
 import PlantModal from './components/PlantModal';
+import DraggableIcon from './components/DraggableIcon';
 
 const { width, height } = Dimensions.get('window');
 
@@ -64,13 +65,6 @@ export default function HomeScreen() {
   const [selectedIcons, setSelectedIcons] = useState(Array(8).fill(false));
   const [sunAmount, setSunAmount] = useState(100);
   
-  // 拖拽功能相关状态
-  const iconPositions = useRef(
-    Array(8).fill(null).map(() => new Animated.ValueXY())
-  ).current;
-  const panResponders = useRef<PanResponderInstance[]>([]).current;
-  const [draggingIconIndex, setDraggingIconIndex] = useState<number | null>(null);
-
   const dialogMessages = [
     "欢迎来到花园🌱",
     "点击我继续说话～",
@@ -93,28 +87,6 @@ export default function HomeScreen() {
     };
 
     loadImages();
-    
-    // 初始化所有图标的拖拽功能
-    iconPositions.forEach((pos, index) => {
-      const panResponder = PanResponder.create({
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-          setDraggingIconIndex(index);
-          // 保存当前位置作为偏移量
-          pos.extractOffset();
-          // 重置临时移动值为0, 0
-          pos.setValue({ x: 0, y: 0 });
-        },
-        onPanResponderMove: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-          pos.setValue({x: gestureState.dx, y: gestureState.dy });
-        },
-        onPanResponderRelease: () => {
-          pos.flattenOffset();
-          setDraggingIconIndex(null);
-        },
-      });
-      panResponders[index] = panResponder;
-    });
   }, []);
 
   const renderIcons = () => {
@@ -130,6 +102,15 @@ export default function HomeScreen() {
       const newSelectedIcons = [...selectedIcons];
       newSelectedIcons[iconIndex] = !newSelectedIcons[iconIndex];
       setSelectedIcons(newSelectedIcons);
+    };
+    
+    // 处理图标拖拽释放事件
+    const handleDragRelease = (iconIndex: number, isDragged: boolean) => {
+      if (isDragged && !selectedIcons[iconIndex]) {
+        const newSelectedIcons = [...selectedIcons];
+        newSelectedIcons[iconIndex] = true;
+        setSelectedIcons(newSelectedIcons);
+      }
     };
 
     for (let i = 0; i < rows; i++) {
@@ -167,41 +148,21 @@ export default function HomeScreen() {
               iconSource = require("../app/assets/home_img/1.png");
           }
          
-          // 确保panResponder已初始化
-          if (!panResponders[iconIndex]) {
-            rowIcons.push(<View key={`icon-placeholder-${iconIndex}`} style={styles.iconWithBaseContainer} />);
-            continue;
-          }
-
           // 对1-6号图标实现拖拽功能
           if (iconIndex <= 5) {
             rowIcons.push(
-              <Animated.View
+              <DraggableIcon
                 key={`draggable-icon-${iconIndex}`}
-                style={[
-                  iconPositions[iconIndex].getLayout(),
-                  { zIndex: draggingIconIndex === iconIndex ? 99 : 1 }
-                ]}
-                {...panResponders[iconIndex].panHandlers}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => handleIconPress(iconIndex)}
-                  style={styles.iconWithBaseContainer}
-                >
-                  <Image
-                    style={styles.iconBase}
-                    source={selectedIcons[iconIndex]
-                      ? require("../app/assets/home_img/used.png")
-                      : require("../app/assets/home_img/unused.png")
-                    }
-                  />
-                  <Image
-                    style={styles.icon}
-                    source={iconSource}
-                  />
-                </TouchableOpacity>
-              </Animated.View>
+                index={iconIndex}
+                source={iconSource}
+                baseSource={selectedIcons[iconIndex]
+                  ? require("../app/assets/home_img/used.png")
+                  : require("../app/assets/home_img/unused.png")
+                }
+                isSelected={selectedIcons[iconIndex]}
+                onPress={handleIconPress}
+                onDragRelease={handleDragRelease}
+              />
             );
           } else {
             // 7-8号图标保持原有的非拖拽形式
