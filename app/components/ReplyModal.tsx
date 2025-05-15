@@ -10,7 +10,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  Keyboard,
+  TouchableWithoutFeedback
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -33,6 +35,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ visible, onClose, message }) =>
 
   const handleSend = () => {
     // 这里可以添加发送逻辑，比如传出 giftCount
+    Keyboard.dismiss();
     onClose();
   };
 
@@ -51,72 +54,80 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ visible, onClose, message }) =>
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <ImageBackground
-            source={require('../assets/letter/letter3.png')}
-            style={styles.container}
-            resizeMode="cover"
-          >
-            <TouchableOpacity onPress={onClose} style={styles.leftTopBackBtn}>
-              <Text style={styles.closeText}>×</Text>
-            </TouchableOpacity>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={{ flex: 1 }}
-              keyboardVerticalOffset={0}
-            >
-              <View style={styles.innerBox}>
-                <Text style={styles.nameCenter}>{`送给 · ${message.name}`}</Text>
-                <Text style={styles.tipText}>写下你想说的话：</Text>
-                <View style={{ width: width * 0.7, minHeight: 90, maxHeight: 120, marginBottom: 18, position: 'relative' }}>
-                  <TextInput
-                    style={styles.inputBox}
-                    value={text}
-                    onChangeText={setText}
-                    placeholder="请输入回信内容..."
-                    placeholderTextColor="#B0B0B0"
-                    multiline={true}
-                    maxLength={300}
-                  />
-                  <View
-                    style={{
-                      position: 'absolute',
-                      right: 10,
-                      bottom: -50,
-                      height: 36,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      zIndex: 2,
-                    }}
-                  >
-                    {giftMode ? (
-                      <>
-                        <Image source={require('../assets/flowers/sun.png')} style={{ width: 28, height: 28, resizeMode: 'contain', marginRight: 6 }} />
-                        <TouchableOpacity onPress={decreaseGift} style={{ marginHorizontal: 4 }}>
-                          <Text style={{ fontSize: 20, color: '#624F3D' }}>−</Text>
-                        </TouchableOpacity>
-                        <Text style={{ fontSize: 16, width: 20, textAlign: 'center', color: '#624F3D' }}>{giftCount}</Text>
-                        <TouchableOpacity onPress={increaseGift} style={{ marginHorizontal: 4 }}>
-                          <Text style={{ fontSize: 20, color: '#624F3D' }}>＋</Text>
-                        </TouchableOpacity>
-                      </>
-                    ) : (
-                      <TouchableOpacity onPress={() => setGiftMode(true)}>
-                        <Image source={require('../assets/letter/gift.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-                <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
-                  <Text style={styles.sendBtnText}>发送</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContent}>
+              <ImageBackground
+                source={require('../assets/letter/letter3.png')}
+                style={styles.container}
+                resizeMode="cover"
+              >
+                <TouchableOpacity onPress={onClose} style={styles.leftTopBackBtn}>
+                  <Text style={styles.closeText}>×</Text>
                 </TouchableOpacity>
-              </View>
-            </KeyboardAvoidingView>
-          </ImageBackground>
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1 }}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+                >
+                  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.innerBox}>
+                      <Text style={styles.nameCenter}>{`送给 · ${message.name}`}</Text>
+                      <Text style={styles.tipText}>写下你想说的话：</Text>
+                      <View style={{ width: width * 0.7, minHeight: 90, maxHeight: 120, marginBottom: 18, position: 'relative' }}>
+                        <TextInput
+                          style={styles.inputBox}
+                          value={text}
+                          onChangeText={setText}
+                          placeholder="请输入回信内容..."
+                          placeholderTextColor="#B0B0B0"
+                          multiline={true}
+                          maxLength={300}
+                          returnKeyType="done"
+                          blurOnSubmit={true}
+                        />
+                        <View
+                          style={{
+                            position: 'absolute',
+                            right: 10,
+                            bottom: -50,
+                            height: 36,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            zIndex: 2,
+                          }}
+                        >
+                          {giftMode ? (
+                            <>
+                              <Image source={require('../assets/flowers/sun.png')} style={{ width: 28, height: 28, resizeMode: 'contain', marginRight: 6 }} />
+                              <TouchableOpacity onPress={decreaseGift} style={{ marginHorizontal: 4 }}>
+                                <Text style={{ fontSize: 20, color: '#624F3D' }}>−</Text>
+                              </TouchableOpacity>
+                              <Text style={{ fontSize: 16, width: 20, textAlign: 'center', color: '#624F3D' }}>{giftCount}</Text>
+                              <TouchableOpacity onPress={increaseGift} style={{ marginHorizontal: 4 }}>
+                                <Text style={{ fontSize: 20, color: '#624F3D' }}>＋</Text>
+                              </TouchableOpacity>
+                            </>
+                          ) : (
+                            <TouchableOpacity onPress={() => setGiftMode(true)}>
+                              <Image source={require('../assets/letter/gift.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                      <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
+                        <Text style={styles.sendBtnText}>发送</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+              </ImageBackground>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
