@@ -16,6 +16,8 @@ export function useProfile() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [journalEntry, setJournalEntry] = useState<string | null>(null);
+  const [gardenSnapshot, setGardenSnapshot] = useState<string | null>(null);
+  const [gardenId, setGardenId] = useState<number | null>(null);
 
   // 获取用户信息
   useEffect(() => {
@@ -26,6 +28,13 @@ export function useProfile() {
   useEffect(() => {
     if (userInfo?.id) {
       fetchLatestJournalEntry(userInfo.id);
+    }
+  }, [userInfo]);
+
+  // 获取用户花园ID
+  useEffect(() => {
+    if (userInfo?.id) {
+      fetchUserGardenId(userInfo.id);
     }
   }, [userInfo]);
 
@@ -145,6 +154,129 @@ export function useProfile() {
     }
   };
 
+  // 获取用户花园ID
+  const fetchUserGardenId = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('gardens')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error("获取花园ID失败:", error);
+        return;
+      }
+
+      if (data) {
+        setGardenId(data.id);
+      }
+    } catch (error) {
+      console.error("获取花园ID错误:", error);
+    }
+  };
+
+  // 根据日期获取花园快照
+  const fetchGardenSnapshot = async (date: string) => {
+    try {
+      if (!gardenId) {
+        console.log("没有花园ID");
+        return null;
+      }
+
+      setIsLoading(true);
+      
+      // 解析传入的日期并格式化为YYYY-MM-DD
+      const selectedDate = new Date(date);
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log(`尝试获取日期 ${dateStr} 的花园快照，花园ID: ${gardenId}`);
+      
+      // 1. 先获取所有快照
+      const { data, error } = await supabase
+        .from('garden_snapshots')
+        .select('*')
+        .eq('garden_id', gardenId);
+
+      if (error) {
+        console.error("获取花园快照列表失败:", error);
+        return null;
+      }
+      
+      // 打印所有找到的记录，以便调试
+      console.log(`找到 ${data?.length || 0} 条花园快照记录`);
+      if (data && data.length > 0) {
+        // 打印所有快照的摘要
+        data.forEach((item, index) => {
+          console.log(`快照 ${index + 1}:`, 
+            `ID: ${item.id}`, 
+            `花园ID: ${item.garden_id}`, 
+            `快照日期: ${item.snapshot || 'null'}`
+          );
+        });
+        
+        // 2. 手动筛选与选定日期匹配的记录
+        let matchedRecords: any[] = [];
+        
+        // 检查第一条记录的snapshot字段是否存在
+        if (data[0] && data[0].snapshot) {
+          // 尝试基于快照字段的字符串形式匹配
+          if (typeof data[0].snapshot === 'string') {
+            // 如果snapshot是字符串格式，检查是否包含目标日期
+            matchedRecords = data.filter(item => {
+              if (!item.snapshot) return false;
+              
+              // 检查snapshot字段是否包含目标日期字符串
+              return (item.snapshot as string).includes(dateStr);
+            });
+            
+            console.log(`基于字符串匹配找到 ${matchedRecords.length} 条记录`);
+          } 
+          // 尝试基于快照字段的日期形式匹配
+          else {
+            // 尝试将snapshot转换为日期并比较
+            matchedRecords = data.filter(item => {
+              if (!item.snapshot) return false;
+              
+              try {
+                const snapshotDate = new Date(item.snapshot as string | number | Date);
+                return (
+                  snapshotDate.getFullYear() === selectedDate.getFullYear() &&
+                  snapshotDate.getMonth() === selectedDate.getMonth() &&
+                  snapshotDate.getDate() === selectedDate.getDate()
+                );
+              } catch (e) {
+                return false;
+              }
+            });
+            
+            console.log(`基于日期匹配找到 ${matchedRecords.length} 条记录`);
+          }
+        }
+        
+        // 如果找到匹配的记录，使用第一条
+        if (matchedRecords.length > 0) {
+          console.log(`使用日期 ${dateStr} 的匹配记录: ID=${matchedRecords[0].id}`);
+          return matchedRecords[0].snapshot_data;
+        }
+        
+        // 如果没有找到精确匹配的记录，使用最近的一条记录进行测试
+        console.log(`未找到日期 ${dateStr} 的记录，使用第一条记录进行测试`);
+        return data[0].snapshot_data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("获取花园快照错误:", error);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 退出登录
   const confirmLogout = () => {
     Alert.alert(
@@ -194,6 +326,8 @@ export function useProfile() {
     fetchUserInfo,
     confirmLogout,
     logout,
-    journalEntry
+    journalEntry,
+    gardenSnapshot,
+    fetchGardenSnapshot
   };
 } 

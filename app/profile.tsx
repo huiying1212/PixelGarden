@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   StatusBar, 
@@ -6,11 +7,11 @@ import {
   Image, 
   ScrollView,
   TouchableOpacity,
-  ImageBackground
+  ImageBackground,
+  ActivityIndicator
 } from 'react-native';
 import { useProfile } from './hooks/useProfile';
 import BackButton from './components/BackButton';
-import { useState, useEffect } from 'react';
 
 // 图片资源
 const IMAGES = {
@@ -18,7 +19,6 @@ const IMAGES = {
   activeDay: require('../app/assets/profile_img/FigmaDDSSlicePNGdfbb002210802394edf7d400f5a7c0de.png'),
   inactiveDay: require('../app/assets/profile_img/FigmaDDSSlicePNGca17798141ccd070aee1248aca5a0d46.png'),
   pendingDay: require('../app/assets/profile_img/FigmaDDSSlicePNG817515a7d625a46276a74a11d15c0bb4.png'),
-  activityIcon: require('../app/assets/profile_img/small garden.png'),
   stepsIcon: require('../app/assets/profile_img/walk.png'),
   background: require('../app/assets/profile_img/FigmaDDSSlicePNG0193b3eb53db29fe492771a60b01e010.png'),
   back: require('./assets/img/backbutton.png'),
@@ -28,8 +28,11 @@ const IMAGES = {
 const BASE_WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 export default function ProfileScreen() {
-  const { userInfo, isLoading, confirmLogout, journalEntry } = useProfile();
+  const { userInfo, isLoading, confirmLogout, journalEntry, fetchGardenSnapshot, gardenSnapshot } = useProfile();
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [gardenImageSource, setGardenImageSource] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [showDebug, setShowDebug] = useState<boolean>(false);
   
   // 园龄天数 - 实际应用中应从API获取
   const gardenDays = 56;
@@ -85,15 +88,77 @@ export default function ProfileScreen() {
     return dates;
   };
 
+  // 获取特定索引对应的完整日期字符串（年-月-日格式）
+  const getFullDateByIndex = (index: number): string => {
+    const now = new Date();
+    const today = now.getDay(); // 0是周日，1是周一，以此类推
+    
+    // 计算选中日期与今天的偏移量
+    const offset = index - (today === 0 ? 6 : today - 1);
+    const selectedDate = new Date(now);
+    selectedDate.setDate(selectedDate.getDate() + offset);
+    
+    // 打印详细的日期信息以便调试
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    console.log(`选择的日期索引: ${index}, 今天星期几: ${today}, 偏移量: ${offset}`);
+    console.log(`计算出的完整日期: ${year}-${month}-${day}`);
+    
+    return selectedDate.toISOString();
+  };
+
   // 处理日期点击
-  const handleDateClick = (index: number) => {
+  const handleDateClick = async (index: number) => {
     const now = new Date();
     const today = now.getDay(); // 0是周日，1是周一，以此类推
     const todayIndex = today === 0 ? 6 : today - 1;
     
+    console.log(`点击的索引: ${index}, 今天的索引: ${todayIndex}`);
+    
     // 只允许点击今天和今天之前的日期
     if (index <= todayIndex) {
       setSelectedDate(index);
+      setDebugInfo('加载中...');
+      setGardenImageSource(null); // 先清空当前图片
+      
+      // 获取选中日期的完整日期字符串
+      const fullDate = getFullDateByIndex(index);
+      
+      try {
+        // 从数据库获取对应日期的花园快照
+        const snapshot = await fetchGardenSnapshot(fullDate);
+        
+        setDebugInfo(`获取的数据: ${snapshot ? '有数据' : '无数据'}`);
+        
+        // 如果找到了快照，显示它；否则显示空白
+        if (snapshot) {
+          try {
+            // 检查snapshot是否为有效URL
+            if (typeof snapshot === 'string' && (
+                snapshot.startsWith('http://') || 
+                snapshot.startsWith('https://') || 
+                snapshot.startsWith('data:image/')
+              )) {
+              setGardenImageSource({ uri: snapshot });
+              setDebugInfo(''); // 成功加载图片时清空调试信息
+            } else {
+              setDebugInfo(`无效的图片数据格式: ${typeof snapshot}, ${snapshot ? snapshot.substring(0, 30) + '...' : 'null'}`);
+              setGardenImageSource(null); // 无效数据时显示空白
+            }
+          } catch (error) {
+            setDebugInfo(`设置图片出错: ${error}`);
+            console.error("设置图片来源失败:", error);
+            setGardenImageSource(null); // 错误时显示空白
+          }
+        } else {
+          setDebugInfo('没有找到对应日期的图片数据');
+          setGardenImageSource(null); // 没有数据时显示空白
+        }
+      } catch (error) {
+        setDebugInfo(`错误: ${error}`);
+        setGardenImageSource(null); // 错误时显示空白
+      }
     }
   };
 
@@ -101,8 +166,23 @@ export default function ProfileScreen() {
   useEffect(() => {
     const now = new Date();
     const today = now.getDay(); // 0是周日，1是周一，以此类推
-    setSelectedDate(today === 0 ? 6 : today - 1);
+    const todayIndex = today === 0 ? 6 : today - 1;
+    handleDateClick(todayIndex);
   }, []);
+
+  // 当gardenSnapshot变化时更新图片
+  useEffect(() => {
+    if (gardenSnapshot) {
+      try {
+        setGardenImageSource({ uri: gardenSnapshot });
+      } catch (error) {
+        console.error("设置图片来源失败:", error);
+        setGardenImageSource(null); // 错误时显示空白
+      }
+    } else {
+      setGardenImageSource(null); // 没有数据时显示空白
+    }
+  }, [gardenSnapshot]);
 
   const renderDayMarkers = () => {
     // 模拟7天的状态，最后一天是今天（活跃）
@@ -177,7 +257,43 @@ export default function ProfileScreen() {
             imageSource={IMAGES.back} 
             style={styles.backButtonStyle}
           />
+          
+          {/* 调试按钮 */}
+          <TouchableOpacity 
+            onPress={() => setShowDebug(!showDebug)}
+            style={styles.debugButton}
+          >
+            <Text style={styles.debugButtonText}>调试</Text>
+          </TouchableOpacity>
         </View>
+        
+        {/* 调试信息面板 */}
+        {showDebug && (
+          <View style={styles.debugPanel}>
+            <Text style={styles.debugTitle}>调试信息</Text>
+            <Text style={styles.debugText}>
+              {debugInfo || '暂无调试信息'}
+            </Text>
+            <View style={styles.debugWeekInfo}>
+              {getDates().map((date, index) => {
+                const now = new Date();
+                const today = now.getDay();
+                const todayIndex = today === 0 ? 6 : today - 1;
+                const offset = index - (today === 0 ? 6 : today - 1);
+                const dateObj = new Date(now);
+                dateObj.setDate(dateObj.getDate() + offset);
+                
+                return (
+                  <Text key={index} style={[styles.debugDateText, index === todayIndex && styles.debugTodayText]}>
+                    索引{index}: {date} ({offset})
+                    {index === selectedDate ? ' [已选]' : ''}
+                  </Text>
+                );
+              })}
+            </View>
+          </View>
+        )}
+        
         <View style={styles.profileSection}>
           <Image source={IMAGES.avatar} style={styles.avatar} />
           <View style={styles.profileInfo}>
@@ -195,11 +311,29 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.healthSection}>
-          <Image 
-            source={IMAGES.activityIcon} 
-            style={styles.activityIcon}
-            resizeMode="cover" 
-          />
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#3C7B55" />
+              <Text style={styles.loadingText}>正在加载花园数据...</Text>
+            </View>
+          ) : (
+            <>
+              {gardenImageSource ? (
+                <Image 
+                  source={gardenImageSource} 
+                  style={styles.activityIcon}
+                  resizeMode="cover" 
+                />
+              ) : (
+                <View style={styles.emptyGardenContainer}>
+                  <Text style={styles.emptyGardenText}>暂无花园图片</Text>
+                </View>
+              )}
+              {debugInfo ? (
+                showDebug && <Text style={styles.debugText}>{debugInfo}</Text>
+              ) : null}
+            </>
+          )}
         </View>
 
         <View style={styles.statsSection}>
@@ -379,22 +513,19 @@ const styles = StyleSheet.create({
     color: '#093E27',
   },
   healthSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 200,
     marginTop: 20,
     marginHorizontal: 20,
-    height: 200,
     backgroundColor: '#fff',
     borderColor: '#3C7B55',
     borderWidth: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    padding: 8,
   },
   activityIcon: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   statsSection: {
     flexDirection: 'row',
@@ -488,5 +619,77 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#093E27',
     fontSize: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+  },
+  loadingText: {
+    color: '#093E27',
+    fontSize: 16,
+    marginTop: 10,
+  },
+  debugText: {
+    color: '#093E27',
+    fontSize: 12,
+    marginTop: 5,
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 5,
+  },
+  debugButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 45,
+  },
+  debugButtonText: {
+    color: '#093E27',
+    fontSize: 12,
+  },
+  debugPanel: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 10,
+    margin: 10,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#3C7B55',
+  },
+  debugTitle: {
+    color: '#093E27',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  debugWeekInfo: {
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#3C7B55',
+    paddingTop: 10,
+  },
+  debugDateText: {
+    color: '#093E27',
+    fontSize: 12,
+    marginVertical: 2,
+  },
+  debugTodayText: {
+    fontWeight: 'bold',
+    color: '#009688',
+  },
+  emptyGardenContainer: {
+    flex: 1,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 10,
+  },
+  emptyGardenText: {
+    color: '#093E27',
+    fontSize: 16,
+    opacity: 0.7,
   },
 });
