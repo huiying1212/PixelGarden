@@ -11,6 +11,12 @@ export interface UserInfo {
   email?: string;
 }
 
+export interface PhysicalHealthData {
+  steps: number | null;
+  calories: number | null;
+  sleep_duration: number | null;
+}
+
 export function useProfile() {
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -18,13 +24,14 @@ export function useProfile() {
   const [journalEntry, setJournalEntry] = useState<string | null>(null);
   const [gardenSnapshot, setGardenSnapshot] = useState<string | null>(null);
   const [gardenId, setGardenId] = useState<number | null>(null);
+  const [physicalHealth, setPhysicalHealth] = useState<PhysicalHealthData | null>(null);
 
   // 获取用户信息
   useEffect(() => {
     fetchUserInfo();
   }, []);
 
-  // 获取最新日记条目
+  // 获取最新日记条目 (只在初始化时调用)
   useEffect(() => {
     if (userInfo?.id) {
       fetchLatestJournalEntry(userInfo.id);
@@ -98,6 +105,92 @@ export function useProfile() {
     } catch (error) {
       console.error("获取日记条目失败:", error);
       setJournalEntry(null);
+    }
+  };
+
+  // 根据日期获取日记条目
+  const fetchJournalEntryByDate = async (date: string) => {
+    try {
+      if (!userInfo?.id) {
+        console.log("没有用户ID，无法获取日记数据");
+        return null;
+      }
+
+      // 解析传入的日期
+      const selectedDate = new Date(date);
+      
+      // 创建当天开始时间（00:00:00）
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      // 创建当天结束时间（23:59:59）
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      console.log(`尝试获取日期范围 ${startOfDay.toISOString()} 至 ${endOfDay.toISOString()} 的日记`);
+      
+      // 查询指定日期的日记数据
+      const { data, error } = await supabase
+        .from('mental_health')
+        .select('journal_entry, recorded_at')
+        .eq('user_id', userInfo.id)
+        .gte('recorded_at', startOfDay.toISOString())
+        .lt('recorded_at', endOfDay.toISOString())
+        .order('recorded_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error("获取日记数据失败:", error);
+        setJournalEntry(null);
+        return null;
+      }
+
+      if (!data || !data.journal_entry) {
+        console.log("未找到该日期的日记数据");
+        setJournalEntry(null);
+        return null;
+      }
+
+      console.log("获取到日记数据:", data);
+      
+      // 处理日记数据
+      let content = null;
+      try {
+        const journalData: any = data.journal_entry;
+        
+        // 如果是字符串，尝试解析为 JSON
+        if (typeof journalData === 'string') {
+          try {
+            const parsed = JSON.parse(journalData);
+            content = parsed.content || null;
+          } catch {
+            content = journalData;
+          }
+        } 
+        // 如果是对象或数组
+        else if (typeof journalData === 'object' && journalData !== null) {
+          if (Array.isArray(journalData) && journalData.length > 0) {
+            content = journalData[0].content || null;
+          } else {
+            content = journalData.content || null;
+          }
+        } 
+        // 其他情况
+        else {
+          content = String(journalData) || null;
+        }
+      } catch (error) {
+        console.error("处理日记数据失败:", error);
+        content = null;
+      }
+      
+      setJournalEntry(content);
+      return content;
+    } catch (error) {
+      console.error("获取日记错误:", error);
+      setJournalEntry(null);
+      return null;
     }
   };
 
@@ -277,6 +370,71 @@ export function useProfile() {
     }
   };
 
+  // 根据日期获取物理健康数据
+  const fetchPhysicalHealthData = async (date: string) => {
+    try {
+      if (!userInfo?.id) {
+        console.log("没有用户ID，无法获取健康数据");
+        return null;
+      }
+
+      // 解析传入的日期并格式化为YYYY-MM-DD
+      const selectedDate = new Date(date);
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log(`尝试获取日期 ${dateStr} 的健康数据，用户ID: ${userInfo.id}`);
+      
+      // 创建当天开始时间（00:00:00）
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      // 创建当天结束时间（23:59:59）
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      // 查询指定日期的健康数据
+      const { data, error } = await supabase
+        .from('physical_health')
+        .select('steps, calories, sleep_duration')
+        .eq('user_id', userInfo.id)
+        .gte('recorded_at', startOfDay.toISOString())
+        .lt('recorded_at', endOfDay.toISOString())
+        .order('recorded_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error("获取健康数据失败:", error);
+        setPhysicalHealth(null);
+        return null;
+      }
+
+      if (!data) {
+        console.log(`未找到日期 ${dateStr} 的健康数据`);
+        const emptyData = { steps: null, calories: null, sleep_duration: null };
+        setPhysicalHealth(emptyData);
+        return emptyData;
+      }
+
+      console.log(`获取到健康数据:`, data);
+      const healthData: PhysicalHealthData = {
+        steps: data.steps,
+        calories: data.calories,
+        sleep_duration: data.sleep_duration
+      };
+      
+      setPhysicalHealth(healthData);
+      return healthData;
+    } catch (error) {
+      console.error("获取健康数据错误:", error);
+      setPhysicalHealth(null);
+      return null;
+    }
+  };
+
   // 退出登录
   const confirmLogout = () => {
     Alert.alert(
@@ -328,6 +486,9 @@ export function useProfile() {
     logout,
     journalEntry,
     gardenSnapshot,
-    fetchGardenSnapshot
+    fetchGardenSnapshot,
+    physicalHealth,
+    fetchPhysicalHealthData,
+    fetchJournalEntryByDate
   };
 } 

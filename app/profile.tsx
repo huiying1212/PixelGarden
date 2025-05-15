@@ -10,7 +10,7 @@ import {
   ImageBackground,
   ActivityIndicator
 } from 'react-native';
-import { useProfile } from './hooks/useProfile';
+import { useProfile, PhysicalHealthData } from './hooks/useProfile';
 import BackButton from './components/BackButton';
 
 // 图片资源
@@ -19,6 +19,7 @@ const IMAGES = {
   activeDay: require('../app/assets/profile_img/FigmaDDSSlicePNGdfbb002210802394edf7d400f5a7c0de.png'),
   inactiveDay: require('../app/assets/profile_img/FigmaDDSSlicePNGca17798141ccd070aee1248aca5a0d46.png'),
   pendingDay: require('../app/assets/profile_img/FigmaDDSSlicePNG817515a7d625a46276a74a11d15c0bb4.png'),
+  question: require('../app/assets/profile_img/question.png'),
   stepsIcon: require('../app/assets/profile_img/walk.png'),
   background: require('../app/assets/profile_img/FigmaDDSSlicePNG0193b3eb53db29fe492771a60b01e010.png'),
   back: require('./assets/img/backbutton.png'),
@@ -28,11 +29,17 @@ const IMAGES = {
 const BASE_WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 export default function ProfileScreen() {
-  const { userInfo, isLoading, confirmLogout, journalEntry, fetchGardenSnapshot, gardenSnapshot } = useProfile();
+  const { userInfo, isLoading, confirmLogout, journalEntry, fetchGardenSnapshot, 
+          gardenSnapshot, fetchPhysicalHealthData, physicalHealth, fetchJournalEntryByDate } = useProfile();
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [gardenImageSource, setGardenImageSource] = useState<any>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [showDebug, setShowDebug] = useState<boolean>(false);
+  const [currentPhysicalData, setCurrentPhysicalData] = useState<PhysicalHealthData>({
+    steps: null, 
+    calories: null, 
+    sleep_duration: null
+  });
+  const [currentJournalEntry, setCurrentJournalEntry] = useState<string | null>(null);
   
   // 园龄天数 - 实际应用中应从API获取
   const gardenDays = 56;
@@ -121,15 +128,27 @@ export default function ProfileScreen() {
       setSelectedDate(index);
       setDebugInfo('加载中...');
       setGardenImageSource(null); // 先清空当前图片
+      setCurrentPhysicalData({ steps: null, calories: null, sleep_duration: null }); // 清空健康数据
+      setCurrentJournalEntry(null); // 清空日记内容
       
       // 获取选中日期的完整日期字符串
       const fullDate = getFullDateByIndex(index);
       
       try {
-        // 从数据库获取对应日期的花园快照
-        const snapshot = await fetchGardenSnapshot(fullDate);
+        // 并行获取所有数据
+        const [snapshot, healthData, journalData] = await Promise.all([
+          fetchGardenSnapshot(fullDate),
+          fetchPhysicalHealthData(fullDate),
+          fetchJournalEntryByDate(fullDate)
+        ]);
         
-        setDebugInfo(`获取的数据: ${snapshot ? '有数据' : '无数据'}`);
+        // 更新物理健康数据
+        if (healthData) {
+          setCurrentPhysicalData(healthData);
+        }
+        
+        // 更新日记内容
+        setCurrentJournalEntry(journalData);
         
         // 如果找到了快照，显示它；否则显示空白
         if (snapshot) {
@@ -141,22 +160,20 @@ export default function ProfileScreen() {
                 snapshot.startsWith('data:image/')
               )) {
               setGardenImageSource({ uri: snapshot });
-              setDebugInfo(''); // 成功加载图片时清空调试信息
             } else {
-              setDebugInfo(`无效的图片数据格式: ${typeof snapshot}, ${snapshot ? snapshot.substring(0, 30) + '...' : 'null'}`);
+              console.log(`无效的图片数据格式: ${typeof snapshot}`);
               setGardenImageSource(null); // 无效数据时显示空白
             }
           } catch (error) {
-            setDebugInfo(`设置图片出错: ${error}`);
             console.error("设置图片来源失败:", error);
             setGardenImageSource(null); // 错误时显示空白
           }
         } else {
-          setDebugInfo('没有找到对应日期的图片数据');
+          console.log('没有找到对应日期的图片数据');
           setGardenImageSource(null); // 没有数据时显示空白
         }
       } catch (error) {
-        setDebugInfo(`错误: ${error}`);
+        console.error("获取数据错误:", error);
         setGardenImageSource(null); // 错误时显示空白
       }
     }
@@ -184,11 +201,29 @@ export default function ProfileScreen() {
     }
   }, [gardenSnapshot]);
 
+  // 当physicalHealth变化时更新当前数据
+  useEffect(() => {
+    if (physicalHealth) {
+      setCurrentPhysicalData(physicalHealth);
+    }
+  }, [physicalHealth]);
+
+  // 当journalEntry变化时更新当前数据
+  useEffect(() => {
+    if (journalEntry !== null) {
+      setCurrentJournalEntry(journalEntry);
+    }
+  }, [journalEntry]);
+
   const renderDayMarkers = () => {
     // 模拟7天的状态，最后一天是今天（活跃）
     const dayStatuses = [
-      'inactive', 'inactive', 'pending', 'pending', 'inactive', 'inactive', 'active'
+      'inactive', 'inactive', 'active', 'active', 'question', 'question', 'question'
     ];
+    // const dayStatuses = [
+    //   'inactive', 'inactive', 'pending', 'pending', 'inactive', 'inactive', 'active'
+    // ];
+
 
     const dates = getDates();
     const now = new Date();
@@ -209,6 +244,9 @@ export default function ProfileScreen() {
           break;
         case 'pending':
           imageSource = IMAGES.pendingDay;
+          break;
+        case 'question':
+          imageSource = IMAGES.question;
           break;
       }
       
@@ -231,7 +269,7 @@ export default function ProfileScreen() {
             <View style={styles.dayMarkerInner}>
               <Image 
                 source={imageSource} 
-                style={styles.dayMarker}
+                style={status === 'question' ? { width: 28, height: 28 } : styles.dayMarker}
                 resizeMode="contain"
               />
             </View>
@@ -257,42 +295,7 @@ export default function ProfileScreen() {
             imageSource={IMAGES.back} 
             style={styles.backButtonStyle}
           />
-          
-          {/* 调试按钮 */}
-          <TouchableOpacity 
-            onPress={() => setShowDebug(!showDebug)}
-            style={styles.debugButton}
-          >
-            <Text style={styles.debugButtonText}>调试</Text>
-          </TouchableOpacity>
         </View>
-        
-        {/* 调试信息面板 */}
-        {showDebug && (
-          <View style={styles.debugPanel}>
-            <Text style={styles.debugTitle}>调试信息</Text>
-            <Text style={styles.debugText}>
-              {debugInfo || '暂无调试信息'}
-            </Text>
-            <View style={styles.debugWeekInfo}>
-              {getDates().map((date, index) => {
-                const now = new Date();
-                const today = now.getDay();
-                const todayIndex = today === 0 ? 6 : today - 1;
-                const offset = index - (today === 0 ? 6 : today - 1);
-                const dateObj = new Date(now);
-                dateObj.setDate(dateObj.getDate() + offset);
-                
-                return (
-                  <Text key={index} style={[styles.debugDateText, index === todayIndex && styles.debugTodayText]}>
-                    索引{index}: {date} ({offset})
-                    {index === selectedDate ? ' [已选]' : ''}
-                  </Text>
-                );
-              })}
-            </View>
-          </View>
-        )}
         
         <View style={styles.profileSection}>
           <Image source={IMAGES.avatar} style={styles.avatar} />
@@ -329,9 +332,6 @@ export default function ProfileScreen() {
                   <Text style={styles.emptyGardenText}>暂无花园图片</Text>
                 </View>
               )}
-              {debugInfo ? (
-                showDebug && <Text style={styles.debugText}>{debugInfo}</Text>
-              ) : null}
             </>
           )}
         </View>
@@ -347,10 +347,15 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#009688' }]}>步数</Text>
             </View>
             <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
-              <Text>12345</Text>
-              <Text style={styles.statUnit}>步</Text>
+              {currentPhysicalData?.steps ? (
+                <>
+                  <Text>{currentPhysicalData.steps}</Text>
+                  <Text style={styles.statUnit}>步</Text>
+                </>
+              ) : (
+                <Text style={styles.statNoData}>暂无数据</Text>
+              )}
             </Text>
-
           </View>
           <View style={styles.statBlock}>
             <View style={styles.statRow}>
@@ -362,10 +367,15 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#F44336' }]}>卡路里</Text>
             </View>
             <Text numberOfLines={1} ellipsizeMode="tail">
-              <Text style={styles.statValue}>961</Text>
-              <Text style={styles.statUnit}>千卡</Text>
+              {currentPhysicalData?.calories ? (
+                <>
+                  <Text style={styles.statValue}>{currentPhysicalData.calories}</Text>
+                  <Text style={styles.statUnit}>千卡</Text>
+                </>
+              ) : (
+                <Text style={styles.statNoData}>暂无数据</Text>
+              )}
             </Text>
-
           </View>
           <View style={styles.statBlock}>
             <View style={styles.statRow}>
@@ -377,18 +387,23 @@ export default function ProfileScreen() {
               <Text style={[styles.statTitle, { color: '#00B8F6' }]}>睡眠时长</Text>
             </View>
             <Text numberOfLines={1} ellipsizeMode="tail">
-              <Text style={styles.statValue}>7.5</Text>
-              <Text style={styles.statUnit}>小时</Text>
+              {currentPhysicalData?.sleep_duration ? (
+                <>
+                  <Text style={styles.statValue}>{currentPhysicalData.sleep_duration}</Text>
+                  <Text style={styles.statUnit}>小时</Text>
+                </>
+              ) : (
+                <Text style={styles.statNoData}>暂无数据</Text>
+              )}
             </Text>
-
           </View>
         </View>
 
         <View style={styles.moodSectionBox}>
-          {journalEntry ? (
-            <Text style={styles.moodText}>{journalEntry}</Text>
+          {currentJournalEntry ? (
+            <Text style={styles.moodText}>{currentJournalEntry}</Text>
           ) : (
-            <Text style={styles.emptyMoodText}>您今天还没有写日记哦~</Text>
+            <Text style={styles.emptyMoodText}>该日没有日记记录~</Text>
           )}
         </View>
     
@@ -631,54 +646,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
   },
-  debugText: {
-    color: '#093E27',
-    fontSize: 12,
-    marginTop: 5,
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 5,
-  },
-  debugButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 15,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginTop: 45,
-  },
-  debugButtonText: {
-    color: '#093E27',
-    fontSize: 12,
-  },
-  debugPanel: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 10,
-    margin: 10,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#3C7B55',
-  },
-  debugTitle: {
-    color: '#093E27',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  debugWeekInfo: {
-    marginTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#3C7B55',
-    paddingTop: 10,
-  },
-  debugDateText: {
-    color: '#093E27',
-    fontSize: 12,
-    marginVertical: 2,
-  },
-  debugTodayText: {
-    fontWeight: 'bold',
-    color: '#009688',
-  },
   emptyGardenContainer: {
     flex: 1,
     height: 200,
@@ -691,5 +658,10 @@ const styles = StyleSheet.create({
     color: '#093E27',
     fontSize: 16,
     opacity: 0.7,
+  },
+  statNoData: {
+    color: '#AAAAAA',
+    fontSize: 13,
+    fontStyle: 'italic',
   },
 });
