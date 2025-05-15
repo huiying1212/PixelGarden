@@ -60,8 +60,6 @@ export default function HomeScreen() {
   const [dialogIndex, setDialogIndex] = useState(0);
   const [showDialog, setShowDialog] = useState(true);
   const [selectedIcons, setSelectedIcons] = useState(Array(8).fill(false));
-
-  const [sunAmount, setSunAmount] = useState(100);
   
   const dialogMessages = [
     "欢迎来到花园🌱",
@@ -174,15 +172,14 @@ export default function HomeScreen() {
                   style={styles.iconBase}
                   source={require("../app/assets/home_img/unget.png")}
                 />
-              )}
-             
-              <Image
-                key={`icon-${iconIndex}`}
-                style={styles.icon}
-                source={iconSource}
-              />
-            </TouchableOpacity>
-          );
+                <Image
+                  key={`icon-${iconIndex}`}
+                  style={styles.icon}
+                  source={iconSource}
+                />
+              </TouchableOpacity>
+            );
+          }
         }
       }
       icons.push(
@@ -648,37 +645,37 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   infoPanelContainer: {
-    position: 'absolute',
-    left: 60,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    height: 48,
+    position: 'absolute',
+    left: 60,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: 48,
   },
   infoPanelRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginVertical: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sunRow: {
-    marginTop: 4,
-  },
-  infoPanelText: {
-    color: '#3C7B55',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sunIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 4,
-  },
-  sunButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-  },
+    marginTop: 4,
+  },
+  infoPanelText: {
+    color: '#3C7B55',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sunIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+  },
+  sunButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
 });
