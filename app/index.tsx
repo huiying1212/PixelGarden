@@ -17,10 +17,10 @@ import { Asset } from "expo-asset";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ModalTabs from "./components/ModalTabs";
 import FriendModal from "./components/FriendModal";
-import { WebView } from 'react-native-webview';
 import MessageModal from './components/MessageModal';
 import PlantModal from './components/PlantModal';
 import DraggableIcon from './components/DraggableIcon';
+import BackgroundWebView from './components/BackgroundWebView';
 
 const { width, height } = Dimensions.get('window');
 
@@ -220,13 +220,20 @@ return (
     <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
     {/* WebGL 页面作为背景 */}
-    <WebView
-      source={{ uri: 'https://ai-garden-flax.vercel.app/' }}
-      style={styles.webview}
-      javaScriptEnabled
-      domStorageEnabled
-      scrollEnabled={false}
-    />
+    {/* day1 发芽形态 */}
+    {/* <BackgroundWebView uri="https://seed-gamma.vercel.app/" /> */}
+
+    {/* day2 生长一阶段 */}
+    <BackgroundWebView uri="https://grow1-six.vercel.app/" />
+
+    {/* day4 生长二阶段+晴天 */}
+    {/* <BackgroundWebView uri="https://grow2-three.vercel.app/" /> */}
+
+    {/* day5 生长二阶段 健康未达标+阴天 */}
+    {/* <BackgroundWebView uri="https://grow2sad.vercel.app/" /> */}
+
+    {/* day7  */}
+    {/* <BackgroundWebView uri="https://ai-garden-flax.vercel.app/" /> */}
 
     <View style={styles.contentContainer}>
       <View style={styles.group_1}>
@@ -408,14 +415,6 @@ const styles = StyleSheet.create({
     margin: 0,
     padding: 0,
     overflow: 'hidden',
-  },
-  webview: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
   },
   contentContainer: {
     position: 'absolute',
