@@ -10,7 +10,8 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-  Animated
+  Animated,
+  ActivityIndicator
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Asset } from "expo-asset";
@@ -60,6 +61,7 @@ export default function HomeScreen() {
   const [dialogIndex, setDialogIndex] = useState(0);
   const [showDialog, setShowDialog] = useState(true);
   const [selectedIcons, setSelectedIcons] = useState(Array(8).fill(false));
+  const [webGLLoaded, setWebGLLoaded] = useState(false);
   
   const dialogMessages = [
     "欢迎来到花园🌱",
@@ -224,7 +226,7 @@ return (
     {/* <BackgroundWebView uri="https://seed-gamma.vercel.app/" /> */}
 
     {/* day2 生长一阶段 */}
-    <BackgroundWebView uri="https://grow1-six.vercel.app/" />
+    {/* <BackgroundWebView uri="https://grow1-six.vercel.app/" /> */}
 
     {/* day4 生长二阶段+晴天 */}
     {/* <BackgroundWebView uri="https://grow2-three.vercel.app/" /> */}
@@ -233,7 +235,10 @@ return (
     {/* <BackgroundWebView uri="https://grow2sad.vercel.app/" /> */}
 
     {/* day7  */}
-    {/* <BackgroundWebView uri="https://ai-garden-flax.vercel.app/" /> */}
+    <BackgroundWebView 
+      uri="https://ai-garden-flax.vercel.app/" 
+      onLoadComplete={(loaded) => setWebGLLoaded(loaded)}
+    />
 
     <View style={styles.contentContainer}>
       <View style={styles.group_1}>
@@ -252,7 +257,7 @@ return (
           {/* 从 ps-newthings 引入 infoPanelContainer */}
           <View style={styles.infoPanelContainer}>
             <View style={styles.infoPanelRow}>
-              <Text style={styles.infoPanelText}>第1天 / 第2周</Text>
+              <Text style={styles.infoPanelText}>第1天 / 第1周</Text>
             </View>
             <View style={[styles.infoPanelRow, styles.sunRow]}>
               <TouchableOpacity
@@ -294,16 +299,18 @@ return (
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.mailboxButton}
-          onPress={() => setMessageModalVisible(true)}
-        >
-          <Image
-            source={require("../app/assets/home_img/mailbox.png")}
-            style={styles.mailboxIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        {webGLLoaded && (
+          <TouchableOpacity
+            style={styles.mailboxButton}
+            onPress={() => setMessageModalVisible(true)}
+          >
+            <Image
+              source={require("../app/assets/home_img/mailbox.png")}
+              style={styles.mailboxIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        )}
 
         <Animated.View
           style={[
@@ -343,7 +350,7 @@ return (
             ]
           }
         ]}>
-          {showDialog && (
+          {webGLLoaded && showDialog && (
             <ImageBackground
               source={require("../app/assets/home_img/talk.png")}
               style={styles.dialogBubble}
@@ -363,19 +370,21 @@ return (
             />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.newImage}
-            onPress={() => {
-              setDialogIndex((prev) => (prev + 1) % dialogMessages.length);
-              setShowDialog(true);
-            }}
-          >
-            <Image
-              source={require("../app/assets/home_img/sprite.png")}
-              style={styles.fullSize}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
+          {webGLLoaded && (
+            <TouchableOpacity
+              style={styles.newImage}
+              onPress={() => {
+                setDialogIndex((prev) => (prev + 1) % dialogMessages.length);
+                setShowDialog(true);
+              }}
+            >
+              <Image
+                source={require("../app/assets/home_img/sprite.png")}
+                style={styles.fullSize}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          )}
         </Animated.View>
       </View>
     </View>
@@ -676,5 +685,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  loadingText: {
+    color: '#3C7B55',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
   },
 });

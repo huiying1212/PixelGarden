@@ -30,7 +30,7 @@ export default function LoginScreen() {
         resizeMode="cover"
       >
         <ImageBackground
-          source={require('./assets/img/FigmaDDSSlicePNG0db6292fbcd5d54678dcf30184830a97.png')}
+          source={require('./assets/img/loginback.png')}
           style={styles.group_2}
           resizeMode="cover"
         >
