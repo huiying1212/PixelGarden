@@ -68,6 +68,7 @@ export default function HomeScreen() {
     "点击我继续说话～",
     "小花很有精神，你的悉心照料让它茁壮成长！",
     "太棒了！因为有你，花园更加生机勃勃",
+    "不要沮丧，花园会慢慢好起来的！",
     "好久没来看我啦，我有点想你~",
   ];
 
@@ -223,16 +224,16 @@ return (
 
     {/* WebGL 页面作为背景 */}
     {/* day1 发芽形态 */}
-    {/* <BackgroundWebView uri="https://seed-gamma.vercel.app/" /> */}
+    {/* <BackgroundWebView uri="https://seed-gamma.vercel.app/" onLoadComplete={(loaded) => setWebGLLoaded(loaded)}/> */}
 
     {/* day2 生长一阶段 */}
-    {/* <BackgroundWebView uri="https://grow1-six.vercel.app/" /> */}
+    {/* <BackgroundWebView uri="https://grow1-six.vercel.app/" onLoadComplete={(loaded) => setWebGLLoaded(loaded)}/> */}
 
     {/* day4 生长二阶段+晴天 */}
-    {/* <BackgroundWebView uri="https://grow2-three.vercel.app/" /> */}
+    {/* <BackgroundWebView uri="https://grow2-three.vercel.app/" onLoadComplete={(loaded) => setWebGLLoaded(loaded)}  /> */}
 
     {/* day5 生长二阶段 健康未达标+阴天 */}
-    {/* <BackgroundWebView uri="https://grow2sad.vercel.app/" /> */}
+    {/* <BackgroundWebView uri="https://grow2sad.vercel.app/" onLoadComplete={(loaded) => setWebGLLoaded(loaded)}/> */}
 
     {/* day7  */}
     <BackgroundWebView 
@@ -257,7 +258,7 @@ return (
           {/* 从 ps-newthings 引入 infoPanelContainer */}
           <View style={styles.infoPanelContainer}>
             <View style={styles.infoPanelRow}>
-              <Text style={styles.infoPanelText}>第1天 / 第1周</Text>
+              <Text style={styles.infoPanelText}>第7天 / 第1周</Text>
             </View>
             <View style={[styles.infoPanelRow, styles.sunRow]}>
               <TouchableOpacity
