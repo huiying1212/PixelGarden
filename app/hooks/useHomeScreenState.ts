@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Animated } from 'react-native';
-import { HomeScreenState, HomeScreenActions } from './types';
-import { DIALOG_MESSAGES, ANIMATION_DURATION } from './constants';
-import { loadImagesWithErrorHandling } from './ImagePreloader';
+import { HomeScreenState, HomeScreenActions } from '../components/home/types';
+import { DIALOG_MESSAGES, ANIMATION_DURATION } from '../components/home/constants';
+import { loadImagesWithErrorHandling } from '../components/home/ImagePreloader';
 
 export const useHomeScreenState = () => {
   // 状态

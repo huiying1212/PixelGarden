@@ -45,6 +45,13 @@ export function useProfile() {
     }
   }, [userInfo]);
 
+  // 当用户信息和花园ID都加载完成后，自动获取今天的数据
+  useEffect(() => {
+    if (userInfo?.id && gardenId) {
+      loadTodayData();
+    }
+  }, [userInfo, gardenId]);
+
   const fetchLatestJournalEntry = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -435,6 +442,30 @@ export function useProfile() {
     }
   };
 
+  // 加载今天的所有数据
+  const loadTodayData = async () => {
+    if (!userInfo?.id) return;
+    
+    try {
+      setIsLoading(true);
+      const today = new Date().toISOString();
+      
+      // 并行获取今天的所有数据
+      const [snapshot, healthData, journalData] = await Promise.all([
+        fetchGardenSnapshot(today),
+        fetchPhysicalHealthData(today),
+        fetchJournalEntryByDate(today)
+      ]);
+      
+      // 更新状态（这些函数内部已经会设置对应的状态）
+      console.log('今天的数据加载完成:', { snapshot: !!snapshot, healthData: !!healthData, journalData: !!journalData });
+    } catch (error) {
+      console.error("加载今天数据失败:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 退出登录
   const confirmLogout = () => {
     Alert.alert(
@@ -489,6 +520,7 @@ export function useProfile() {
     fetchGardenSnapshot,
     physicalHealth,
     fetchPhysicalHealthData,
-    fetchJournalEntryByDate
+    fetchJournalEntryByDate,
+    loadTodayData
   };
 } 

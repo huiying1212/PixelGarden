@@ -17,7 +17,7 @@ import BackgroundWebView from './components/BackgroundWebView';
 // HomeScreen 特定组件
 import TopHeader from './components/home/TopHeader';
 import BottomContent from './components/home/BottomContent';
-import { useHomeScreenState } from './components/home/useHomeScreenState';
+import { useHomeScreenState } from './hooks/useHomeScreenState';
 import { DIALOG_MESSAGES } from './components/home/constants';
 
 const { width, height } = Dimensions.get('window');
