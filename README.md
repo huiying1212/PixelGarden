@@ -1,6 +1,7 @@
-# GrowYou 🌱 📄 [点击查看作品集|Portfolio PDF](./portfolio.pdf)
+# GrowYou 🌱 
 
 一个基于React Native + Expo开发的健康管理与虚拟花园应用，通过游戏化的方式帮助用户记录和管理身心健康。
+📄 [点击查看作品集|Portfolio PDF](./portfolio.pdf)
 
 ## 项目特色 ✨
 
