@@ -1,0 +1,150 @@
+// 共享常量定义
+export const SHARED_CONSTANTS = {
+  MAX_INPUT_LENGTH: 30,
+  COLORS: {
+    PRIMARY_GREEN: 'rgba(9, 62, 39, 1)',
+    ACCENT_GREEN: 'rgba(105, 255, 183, 1)',
+    BORDER_GREEN: 'rgba(60, 123, 85, 1)',
+    INPUT_GREEN: 'rgba(0, 118, 114, 1)',
+    PLACEHOLDER_GREEN: 'rgba(0, 118, 114, 0.6)',
+    BACKGROUND_GREEN: 'rgba(251, 255, 244, 1)',
+    HIGHLIGHT_GREEN: 'rgba(149, 193, 173, 1)',
+    WHITE: 'rgba(255, 255, 255, 1)',
+    BLACK: 'rgba(0, 0, 0, 1)',
+    SHADOW_GREEN: 'rgba(20, 96, 58, 0.33)',
+    TEXT_SHADOW_GREEN: 'rgba(60, 123, 85, 1)',
+    ERROR_RED: 'rgba(255, 0, 0, 1)',
+    OPTIONAL_GRAY: 'rgba(200, 200, 200, 0.8)'
+  },
+  IMAGES: {
+    BACKGROUND: require('../../assets/img/FigmaDDSSlicePNG2de87e7d36b33f8b8880081a4d05c6c5.png'),
+    LOGIN_BACK: require('../../assets/img/loginback.png'),
+    USER_ICON: require('../../assets/img/FigmaDDSSlicePNGc6af75c9e69be82167f59e0c0a0f698e.png'),
+    PASSWORD_ICON: require('../../assets/img/FigmaDDSSlicePNG1bc2755ddc1fe574958e95c2833f8534.png'),
+    DECORATION: require('../../assets/img/FigmaDDSSlicePNG0b59f1b1e43b19e915f1bd9a385e9092.png'),
+    BACK_BUTTON: require('../../assets/img/backbutton.png')
+  },
+  SHADOW_STYLE: {
+    shadowColor: 'rgba(20, 96, 58, 0.33)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+  }
+} as const;
+
+// 共享样式生成器
+export const createSharedStyles = (width: number, height: number) => ({
+  page: {
+    flex: 1,
+    backgroundColor: SHARED_CONSTANTS.COLORS.WHITE,
+    position: 'relative' as const,
+    width: width,
+    height: height,
+    overflow: 'hidden' as const,
+  },
+  backgroundContainer: {
+    width: width,
+    height: height,
+    position: 'absolute' as const,
+    left: 0,
+    top: 0,
+  },
+  welcomeContainer: {
+    width: '100%' as const,
+    alignItems: 'center' as const,
+    marginTop: 100,
+  },
+  welcomeText: {
+    width: 120,
+    height: 24,
+    color: SHARED_CONSTANTS.COLORS.WHITE,
+    fontSize: 24,
+    textAlign: 'center' as const,
+    lineHeight: 24,
+    textShadowColor: SHARED_CONSTANTS.COLORS.TEXT_SHADOW_GREEN,
+    textShadowOffset: { width: 0.4, height: 0.4 },
+    textShadowRadius: 0.4,
+  },
+  inputContainer: {
+    ...SHARED_CONSTANTS.SHADOW_STYLE,
+    backgroundColor: SHARED_CONSTANTS.COLORS.BACKGROUND_GREEN,
+    borderRadius: 2,
+    width: 297,
+    height: 40,
+    borderWidth: 1,
+    borderColor: SHARED_CONSTANTS.COLORS.BORDER_GREEN,
+  },
+  errorInputContainer: {
+    borderColor: SHARED_CONSTANTS.COLORS.ERROR_RED,
+    borderWidth: 2,
+  },
+  optionalInputContainer: {
+    backgroundColor: 'rgba(251, 255, 244, 0.7)',
+    borderColor: SHARED_CONSTANTS.COLORS.OPTIONAL_GRAY,
+  },
+  inputContent: {
+    width: '90%' as const,
+    height: 40,
+    marginTop: 0,
+    marginLeft: 16,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+  },
+  inputIcon: {
+    width: 20,
+    height: 20,
+  },
+  textInput: {
+    flex: 1,
+    height: 40,
+    color: SHARED_CONSTANTS.COLORS.INPUT_GREEN,
+    fontSize: 16,
+    textAlign: 'left' as const,
+    marginLeft: 10,
+    paddingVertical: 0,
+  },
+  errorText: {
+    color: SHARED_CONSTANTS.COLORS.ERROR_RED,
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 5,
+    textAlign: 'left' as const,
+    width: 290,
+  },
+  actionButton: {
+    ...SHARED_CONSTANTS.SHADOW_STYLE,
+    backgroundColor: SHARED_CONSTANTS.COLORS.ACCENT_GREEN,
+    borderRadius: 2,
+    height: 40,
+    borderWidth: 1,
+    borderColor: SHARED_CONSTANTS.COLORS.BORDER_GREEN,
+    width: 96,
+    marginTop: 24,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  actionButtonText: {
+    color: SHARED_CONSTANTS.COLORS.PRIMARY_GREEN,
+    fontSize: 18,
+    textAlign: 'center' as const,
+  },
+  linkPrompt: {
+    width: 128,
+    height: 16,
+    marginTop: 16,
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+  },
+  promptText: {
+    color: SHARED_CONSTANTS.COLORS.PLACEHOLDER_GREEN,
+    fontSize: 16,
+    textAlign: 'center' as const,
+  },
+  linkText: {
+    color: SHARED_CONSTANTS.COLORS.PRIMARY_GREEN,
+    fontSize: 16,
+    textAlign: 'center' as const,
+    marginLeft: 5,
+  },
+}); 
