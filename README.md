@@ -135,16 +135,18 @@ app/
 
 ### 构建生产版本
 ```bash
-# 构建优化版本
-expo build
+# 安装EAS CLI
+npm install -g eas-cli
 
-# 或使用EAS Build
+# 登录Expo账户
+eas login
+
+# 配置EAS
+eas build:configure
+
+# 构建APK
+eas build --platform android --profile preview
+# 或
 eas build --platform all
 ```
 
-### 环境配置
-- 开发环境：使用Expo Go
-- 生产环境：构建独立应用包
-
-
-**AIGarden** - 让健康管理变得有趣 🌸
