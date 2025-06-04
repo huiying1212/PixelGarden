@@ -11,7 +11,6 @@ import {
   ImageBackground,
 } from 'react-native';
 import DetailModal from './DetailModal';
-import DetailModal1 from './DetailModal1';
 
 const { width } = Dimensions.get('window');
 
@@ -45,7 +44,6 @@ const MessageModal: React.FC<MessageModalProps> = ({ visible, onClose }) => {
   const [messages, setMessages] = useState(initialMessageData);
   const [selectedMessage, setSelectedMessage] = useState<typeof initialMessageData[0] | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [showDetail1, setShowDetail1] = useState(false);
 
   return (
     <Modal
@@ -72,15 +70,8 @@ const MessageModal: React.FC<MessageModalProps> = ({ visible, onClose }) => {
                       key={index} 
                       style={styles.messageBox}
                       onPress={() => {
-                        if (item.type === 'letter1') {
-                          setSelectedMessage(item);
-                          setSelectedIndex(index);
-                          setShowDetail1(false);
-                        } else if (item.type === 'letter2') {
-                          setSelectedMessage(item);
-                          setSelectedIndex(index);
-                          setShowDetail1(true);
-                        }
+                        setSelectedMessage(item);
+                        setSelectedIndex(index);
                       }}
                     >
                       <Image style={styles.avatar} source={item.avatar} />
@@ -104,7 +95,7 @@ const MessageModal: React.FC<MessageModalProps> = ({ visible, onClose }) => {
         </View>
       </View>
 
-      {selectedMessage && !showDetail1 && (
+      {selectedMessage && (
         <DetailModal
           visible={!!selectedMessage}
           onClose={() => {
@@ -124,13 +115,7 @@ const MessageModal: React.FC<MessageModalProps> = ({ visible, onClose }) => {
             setSelectedIndex(null);
           }}
           message={selectedMessage}
-        />
-      )}
-      {selectedMessage && showDetail1 && (
-        <DetailModal1
-          visible={!!selectedMessage}
-          onClose={() => setSelectedMessage(null)}
-          message={selectedMessage}
+          isReplied={selectedMessage.type === 'letter2'}
         />
       )}
     </Modal>

@@ -23,9 +23,10 @@ interface DetailModalProps {
     avatar: any;
     type: string;
   };
+  isReplied?: boolean;
 }
 
-const DetailModal: React.FC<DetailModalProps> = ({ visible, onClose, message }) => {
+const DetailModal: React.FC<DetailModalProps> = ({ visible, onClose, message, isReplied = false }) => {
   const [showReplyModal, setShowReplyModal] = useState(false);
   // 判断是否为letter2
   const isLetter2 = message.avatar && message.avatar.toString().includes('letter2');
@@ -56,22 +57,38 @@ const DetailModal: React.FC<DetailModalProps> = ({ visible, onClose, message }) 
                 如果你看到这封信的时候，心情刚好不太好，那我就借这一点点文字，把温柔和力量送给你。你一直都很棒，不需要太努力去证明自己。能走到今天的你，已经值得被好好拥抱了。
                 </Text>
                 <View style={styles.rewardBox}>
-                  <Image style={styles.rewardIcon} source={require('../assets/letter/sun1.png')} />
-                  <Text style={styles.rewardText}>获得 阳光x10</Text>
+                  <Image 
+                    style={styles.rewardIcon} 
+                    source={isReplied 
+                      ? require('../assets/letter/sun1_dark.png') 
+                      : require('../assets/letter/sun1.png')
+                    } 
+                  />
+                  <Text style={styles.rewardText}>
+                    {isReplied ? '已获得 阳光x10' : '获得 阳光x10'}
+                  </Text>
                 </View>
-                <TouchableOpacity style={styles.replyBtn} onPress={() => setShowReplyModal(true)}>
-                  <Text style={styles.replyBtnText}>回信</Text>
-                </TouchableOpacity>
+                {isReplied ? (
+                  <TouchableOpacity style={styles.replyBtnDisabled} disabled={true}>
+                    <Text style={styles.replyBtnTextDisabled}>已回信</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.replyBtn} onPress={() => setShowReplyModal(true)}>
+                    <Text style={styles.replyBtnText}>回信</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </ScrollView>
           </ImageBackground>
         </View>
       </View>
-      <ReplyModal
-        visible={showReplyModal}
-        onClose={() => setShowReplyModal(false)}
-        message={message}
-      />
+      {!isReplied && (
+        <ReplyModal
+          visible={showReplyModal}
+          onClose={() => setShowReplyModal(false)}
+          message={message}
+        />
+      )}
     </Modal>
   );
 };
@@ -158,6 +175,21 @@ const styles = StyleSheet.create({
   replyBtnText: {
     fontSize: 16,
     color: '#624F3D',
+    fontWeight: 'bold',
+  },
+  replyBtnDisabled: {
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E0E0E0',
+    borderWidth: 2,
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  replyBtnTextDisabled: {
+    fontSize: 16,
+    color: '#B0B0B0',
     fontWeight: 'bold',
   },
   leftTopBackBtn: {

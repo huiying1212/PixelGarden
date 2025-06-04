@@ -2,15 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet, ImageBackground, Image } from 'react-native';
 
 const flowers = [
-  { name: '小黄花', icon: require('./assets/flowers/flower1.png') },
-  { name: '向日葵', icon: require('./assets/flowers/flower2.png') },
-  { name: '玫瑰花', icon: require('./assets/flowers/flower3.png') },
-  { name: '雏菊', icon: require('./assets/flowers/flower4.png') },
-  { name: '绣球花', icon: require('./assets/flowers/flower5.png') },
-  { name: '白色花', icon: require('./assets/flowers/flower6.png') },
-  { name: '郁金香', icon: require('./assets/flowers/flower7.png') },
-  { name: '粉色花', icon: require('./assets/flowers/flower8.png') },
-  { name: '未知', icon:  require('./assets/flowers/flower9.png')},
+  { name: '小黄花', icon: require('../assets/flowers/flower1.png') },
+  { name: '向日葵', icon: require('../assets/flowers/flower2.png') },
+  { name: '玫瑰花', icon: require('../assets/flowers/flower3.png') },
+  { name: '雏菊', icon: require('../assets/flowers/flower4.png') },
+  { name: '绣球花', icon: require('../assets/flowers/flower5.png') },
+  { name: '白色花', icon: require('../assets/flowers/flower6.png') },
+  { name: '郁金香', icon: require('../assets/flowers/flower7.png') },
+  { name: '粉色花', icon: require('../assets/flowers/flower8.png') },
+  { name: '未知', icon:  require('../assets/flowers/flower9.png')},
 ];
 
 export default function GalleryScreen() {
@@ -19,7 +19,7 @@ export default function GalleryScreen() {
       {flowers.map((flower, index) => (
         <View key={index} style={styles.gridItem}>
           <ImageBackground
-            source={require('./assets/flowers/方块背景.png')}
+            source={require('../assets/flowers/方块背景.png')}
             style={styles.imageBackground}
           >
             {flower.icon ? (

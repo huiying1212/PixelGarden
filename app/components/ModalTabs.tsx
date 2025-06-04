@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Modal, TouchableOpacity, Text, StyleSheet, Image, Dimensions } from "react-native";
-import TaskScreen from "../TaskScreen";
-import GalleryScreen from "../GalleryScreen";
+import TaskScreen from "./TaskScreen";
+import GalleryScreen from "./GalleryScreen";
 
 const { width, height } = Dimensions.get('window');
 

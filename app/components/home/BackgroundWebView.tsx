@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, Dimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { WebViewMessageEvent } from 'react-native-webview/lib/WebViewTypes';
 
 interface BackgroundWebViewProps {
   uri: string;
@@ -48,7 +49,7 @@ const BackgroundWebView: React.FC<BackgroundWebViewProps> = ({ uri, onLoadComple
     console.log('WebView loaded, waiting for Unity...');
   };
   
-  const onMessage = (event) => {
+  const onMessage = (event: WebViewMessageEvent) => {
     const { data } = event.nativeEvent;
     if (data === 'unityGameLoaded' && !isLoaded) {
       console.log('Unity fully loaded!');

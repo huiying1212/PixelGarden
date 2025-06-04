@@ -83,7 +83,7 @@ export default function TaskScreen({ updateSunAmount }: TaskScreenProps) {
                     {task.rewardClaimed ? '已领取' : '完成奖励'}
                   </Text>
                   <Image
-                    source={require('./assets/flowers/sun.png')}
+                    source={require('../assets/flowers/sun.png')}
                     style={styles.coinIcon}
                   />
                   <Text style={[

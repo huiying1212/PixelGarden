@@ -12,9 +12,9 @@ import ModalTabs from "./components/ModalTabs";
 import FriendModal from "./components/FriendModal";
 import MessageModal from './components/MessageModal';
 import PlantModal from './components/PlantModal';
-import BackgroundWebView from './components/BackgroundWebView';
 
 // HomeScreen 特定组件
+import BackgroundWebView from './components/home/BackgroundWebView';
 import TopHeader from './components/home/TopHeader';
 import BottomContent from './components/home/BottomContent';
 import { useHomeScreenState } from './hooks/useHomeScreenState';
